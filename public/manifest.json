@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Direction Switcher (R To L & L To R)",
+  "description": "Toggle text direction between LTR and RTL on any website",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Toggle Text Direction"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ]
+}
