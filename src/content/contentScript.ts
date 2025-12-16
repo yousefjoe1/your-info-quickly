@@ -1,4 +1,4 @@
-import type { ChromeMessage, DirectionManager } from "../types";
+import type { DirectionManager } from "../types";
 
 // Content script that runs on every page
 class DirectionManagerImpl implements DirectionManager {
@@ -10,13 +10,15 @@ class DirectionManagerImpl implements DirectionManager {
 
   init(): void {
     // Listen for messages from popup
-    chrome.runtime.onMessage.addListener((request: ChromeMessage, sender, sendResponse) => {
-      if (request.action === 'setDirection') {
-        this.setDirection(request.direction);
-        sendResponse({ success: true });
-      }
-      return true;
-    });
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log("🚀 ~ DirectionManagerImpl ~ init ~ sender:", sender)
+  if (message.action === "setDirection") {
+    document.documentElement.dir = message.direction;
+    document.body.dir = message.direction;
+    sendResponse({ success: true });
+  }
+  return true; // Keep the message channel open for async response
+});
 
     // Apply saved direction on page load
     this.applySavedDirection();
