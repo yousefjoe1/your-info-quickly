@@ -1,115 +1,159 @@
 import React, { useState, useEffect } from 'react';
 import type { MyQuickInfo } from '../types';
 import CopyButton from './Buttons/CopyButton';
+import { BiTrash } from 'react-icons/bi';
 ;
+import { useToast } from '../hooks/useToast';
+import Toast from './Toasts/Toast';
 
 const Popup: React.FC = () => {
-
-    const [myQuickInfo, setMyQuickInfo] = useState<MyQuickInfo[]>([]);
-
-    // const [runtimeError, setRuntimeError] = useState<string>('');
-
-    // const [isLoading, setIsLoading] = useState<boolean>(true);
-
-
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-    }, []);
-
-    // const handleToggle = (newDirection: 'ltr' | 'rtl'): void => {
-    //     if (!currentTab?.id || !currentTab.url) return;
-
-    //     setCurrentDirection(newDirection);
-    //     setRuntimeError(''); // Clear any previous errors
-
-    //     const hostname = new URL(currentTab.url).hostname;
-
-    //     chrome.storage.local.set({ [hostname]: newDirection }, () => {
-    //         if (chrome.runtime.lastError) {
-    //             console.error('Error saving to storage:', chrome.runtime.lastError);
-    //             setRuntimeError(`Failed to save: ${chrome.runtime.lastError.message}`);
-    //             return;
-    //         }
-
-    //         chrome.tabs.sendMessage(currentTab.id!, {
-    //             action: 'setDirection',
-    //             direction: newDirection
-    //         }, () => {
-    //             if (chrome.runtime.lastError) {
-    //                 console.error('Error sending message:', chrome.runtime.lastError);
-    //                 setRuntimeError(`Failed to apply direction: ${chrome.runtime.lastError.message}`);
-    //             }
-    //         });
-    //     });
-    // };
-    // if (isLoading) {
-    //     return (
-    //         <div className="">
-    //             <div className="loading">Loading...</div>
-    //         </div>
-    //     );
-    // }
-
-    // if (initError) {
-    //     return (
-    //         <div className="popup-container">
-    //             <div className="error-message">
-    //                 <h3>Error</h3>
-    //                 <p>{initError}</p>
-    //                 <p style={{ fontSize: '12px', marginTop: '10px' }}>
-    //                     Make sure you're testing this in a Chrome extension environment.
-    //                 </p>
-    //             </div>
-    //         </div>
-    //     );
-    // }
+    const { toast, showToast, hideToast } = useToast();
 
     const [type, setType] = useState<string>('text');
     const [value, setValue] = useState<string>('');
     const [fieldName, setFieldName] = useState('')
+
+    const [myQuickInfo, setMyQuickInfo] = useState<MyQuickInfo[]>([]);
+    const [reload, setReload] = useState(false);
+
+    const saveData = (newData: unknown[]) => {
+        if (!chrome?.storage) return;
+
+
+        chrome.runtime.sendMessage(
+            { action: 'saveData', data: newData },
+            (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError);
+                    localStorage.setItem('info', JSON.stringify(newData));
+                    return;
+                }
+
+                if (response?.success) {
+                    console.log('Data saved successfully');
+                    showToast('Data saved successfully', 'success');
+                }
+            }
+        );
+    };
+
+    const getData = () => {
+        if (!chrome?.storage) return;
+        chrome.runtime.sendMessage(
+            { action: 'getData' },
+            (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError);
+                    setMyQuickInfo([]);
+                    return;
+                }
+
+                if (response?.success) {
+                    setMyQuickInfo(response.data || []);
+                } else {
+                    setMyQuickInfo([]);
+                }
+            }
+        );
+    };
+
+    // delete info
+    const deleteData = (index: number) => {
+        const newInfo = [...myQuickInfo];
+        newInfo.splice(index, 1);
+        setMyQuickInfo(newInfo);
+        saveData(newInfo);
+        setTimeout(() => {
+            setReload(!reload);
+        }, 1000);
+    };
+
+    useEffect(() => {
+        getData();
+    }, [reload]);
+
+
     const handleValueChange = (e: string) => {
         setValue(e);
     };
 
 
     const handleAddField = () => {
-        setMyQuickInfo([...myQuickInfo, { field: fieldName, title: value, type: type }]);
+
+        if (value == '' || fieldName == '') {
+            showToast('Please fill all fields', 'error');
+            return;
+        }
+        const newInfo = [...myQuickInfo, { field: fieldName, title: value, type: type }];
+        setMyQuickInfo(newInfo);
         setFieldName('');
         setValue('');
         setType('text');
+        saveData(newInfo);
+        setTimeout(() => {
+            setReload(!reload);
+        }, 1000);
     };
 
 
     return (
-        <div className="bg-gray-200 max-w-[600px] max-h-[400px] overflow-y-auto rounded-xl p-3">
-            <h3 className='text-center shadow-sm rounded-xl mb-4'>Have Your Info Quickley</h3>
+        <div className="bg-gray-200 w-[600px] max-h-[400px] overflow-y-auto rounded-xl p-3">
+            <h3 className='text-center shadow-sm rounded-xl mb-4'>Have Your Info Quickly</h3>
 
-            {/* {runtimeError && (
-                <div className="error-message" style={{ marginBottom: '10px' }}>
-                    <p style={{ color: 'red', fontSize: '12px' }}>{runtimeError}</p>
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={hideToast}
+                />
+            )}
+
+            <div className='w-full'>
+
+                <div className="flex gap-2">
+                    <div className='flex flex-col gap-1 w-full'>
+
+                        <label>Field Name</label>
+
+                        <input placeholder='My Name' type="text" value={fieldName} onChange={(e) => setFieldName(e.target.value)} className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2' />
+                    </div>
+
+                    <div className='flex items-end gap-2'>
+
+                        <div className='flex flex-col gap-1'>
+
+                            <label htmlFor="type">Type</label>
+                            <select id="type" className='bg-gray-400 text-white focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2' onChange={(e) => setType(e.target.value)}>
+                                <option value="text">text</option>
+                                {/* <option value="password">password</option> */}
+                                <option value="email">email</option>
+                                <option value="number">number</option>
+                                <option value="textarea">textarea</option>
+                            </select>
+                        </div>
+                        <button onClick={handleAddField} className='save-button'>Save</button>
+                    </div>
                 </div>
-            )} */}
+                <div className="flex justify-between gap-1 w-full mt-1">
 
-            <div >
-                <label>Field Name</label>
-                <div className="flex items-start gap-3">
-                    {
-                        type == 'textarea' ?
-                            <textarea className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2'></textarea> :
-                            <>
-                                <input type="text" value={fieldName} onChange={(e) => setFieldName(e.target.value)} className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2' />
-                                <input className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2'
-                                    type={type} onChange={(e) => handleValueChange(e.target.value)} value={value} />
-                            </>
-                    }
-                    <select className='bg-gray-400 text-white focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2' onChange={(e) => setType(e.target.value)}>
-                        <option value="text">text</option>
-                        {/* <option value="password">password</option> */}
-                        <option value="email">email</option>
-                        <option value="number">number</option>
-                        <option value="textarea">textarea</option>
-                    </select>
-                    <button onClick={handleAddField} className='bg-green-400 rounded-xl border-2 border-green-400 p-2'>Save</button>
+                    <div className='w-full'>
+                        {
+                            type == 'textarea' ?
+                                <div className='flex flex-col gap-1 w-full'>
+                                    <label htmlFor="value">Value</label>
+                                    <textarea id="value" onChange={(e) => handleValueChange(e.target.value)} className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2'></textarea>
+                                </div>
+                                :
+
+                                <div className="flex flex-col gap-1">
+                                    <label htmlFor="value">Value</label>
+                                    <input id="value" className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2'
+                                        type={type} onChange={(e) => handleValueChange(e.target.value)} value={value} />
+                                </div>
+                        }
+
+                    </div>
+
                 </div>
             </div>
             {
@@ -121,7 +165,14 @@ const Popup: React.FC = () => {
                                 {item.title}
                             </h2>
 
-                            <CopyButton textToCopy={item.title} />
+                            <div className='flex items-center gap-1'>
+                                <CopyButton textToCopy={item.title} />
+                                <button onClick={() => deleteData(index)} className='bg-red-400 rounded-xl border-2 border-red-400 p-1'>
+                                    <BiTrash size={14} className='text-white' />
+                                </button>
+
+                            </div>
+
                         </div>
                     </div>
                 ))
