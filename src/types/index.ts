@@ -13,14 +13,8 @@ export interface ChromeMessage {
   direction: 'ltr' | 'rtl';
 }
 
-export interface DirectionManager {
-  currentDirection: 'ltr' | 'rtl';
-  init(): void;
-  applySavedDirection(): Promise<void>;
-  setDirection(direction: 'ltr' | 'rtl'): void;
-  getCurrentDirection(): 'ltr' | 'rtl';
-}
-
-export interface TabChangeInfo {
-  status?: 'loading' | 'complete' | 'unloaded' | undefined;
+export interface MyQuickInfo {
+  field: string;
+  title: string;
+  type: string;
 }

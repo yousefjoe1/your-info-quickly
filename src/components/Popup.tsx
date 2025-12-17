@@ -1,75 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import ToggleSwitch from './ToggleSwitch';
-
-interface ChromeTab {
-    id?: number;
-    url?: string;
-    title?: string;
-}
+import type { MyQuickInfo } from '../types';
+import CopyButton from './Buttons/CopyButton';
+;
 
 const Popup: React.FC = () => {
-    const [currentDirection, setCurrentDirection] = useState<'ltr' | 'rtl'>('ltr');
-    const [currentTab, setCurrentTab] = useState<ChromeTab | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [initError, setInitError] = useState<string>('');
-    const [runtimeError, setRuntimeError] = useState<string>('');
 
-    const initializePopup = (): void => {
-        try {
-            // Check if Chrome APIs are available
-            // if (typeof chrome === 'undefined' || !chrome.tabs || !chrome.tabs.query) {
-            //     setInitError('Chrome extension APIs not available. Make sure this is running as a Chrome extension.');
-            //     setIsLoading(false);
-            //     return;
-            // }
+    const [myQuickInfo, setMyQuickInfo] = useState<MyQuickInfo[]>([]);
 
-            chrome.tabs.query({ active: true, currentWindow: true }, (tabs: ChromeTab[]) => {
-                if (chrome.runtime.lastError) {
-                    setInitError(`Chrome API error: ${chrome.runtime.lastError.message}`);
-                    setIsLoading(false);
-                    return;
-                }
+    // const [runtimeError, setRuntimeError] = useState<string>('');
 
-                if (!tabs || tabs.length === 0) {
-                    setInitError('No active tab found');
-                    setIsLoading(false);
-                    return;
-                }
+    // const [isLoading, setIsLoading] = useState<boolean>(true);
 
-                const tab = tabs[0];
-                setCurrentTab(tab);
-
-                if (!tab.url) {
-                    setInitError('No URL found for current tab');
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Get stored direction for this website
-                chrome.storage.local.get([new URL(tab.url).hostname], (result: { [key: string]: 'ltr' | 'rtl' }) => {
-                    if (chrome.runtime.lastError) {
-                        setInitError(`Storage error: ${chrome.runtime.lastError.message}`);
-                        setIsLoading(false);
-                        return;
-                    }
-
-                    const hostname = new URL(tab.url!).hostname;
-                    const direction = result[hostname] || 'ltr';
-
-                    setCurrentDirection(direction);
-                    setIsLoading(false);
-                });
-            });
-        } catch (error) {
-            console.error('Error initializing popup:', error);
-            setInitError(`Initialization error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-            setIsLoading(false);
-        }
-    };
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        initializePopup();
     }, []);
 
     // const handleToggle = (newDirection: 'ltr' | 'rtl'): void => {
@@ -98,112 +42,92 @@ const Popup: React.FC = () => {
     //         });
     //     });
     // };
-    const handleToggle = (newDirection: 'ltr' | 'rtl'): void => {
-        if (!currentTab?.id || !currentTab.url) return;
+    // if (isLoading) {
+    //     return (
+    //         <div className="">
+    //             <div className="loading">Loading...</div>
+    //         </div>
+    //     );
+    // }
 
-        setCurrentDirection(newDirection);
-        setRuntimeError('');
+    // if (initError) {
+    //     return (
+    //         <div className="popup-container">
+    //             <div className="error-message">
+    //                 <h3>Error</h3>
+    //                 <p>{initError}</p>
+    //                 <p style={{ fontSize: '12px', marginTop: '10px' }}>
+    //                     Make sure you're testing this in a Chrome extension environment.
+    //                 </p>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
-        const hostname = new URL(currentTab.url).hostname;
-
-        chrome.storage.local.set({ [hostname]: newDirection }, () => {
-            if (chrome.runtime.lastError) {
-                setRuntimeError(`Failed to save: ${chrome.runtime.lastError.message}`);
-                return;
-            }
-
-            // Use executeScript instead of sendMessage
-            chrome.scripting.executeScript({
-                target: { tabId: currentTab.id! },
-                func: (direction) => {
-                    document.documentElement.dir = direction;
-                    document.body.dir = direction;
-                },
-                args: [newDirection]
-            }).catch((error) => {
-                setRuntimeError(`Failed to apply direction: ${error.message}`);
-            });
-        });
-    };
-    const handleReset = (): void => {
-        if (!currentTab?.id || !currentTab.url) return;
-
-        setCurrentDirection('ltr');
-        setRuntimeError(''); // Clear any previous errors
-
-        const hostname = new URL(currentTab.url).hostname;
-
-        chrome.storage.local.remove([hostname], () => {
-            if (chrome.runtime.lastError) {
-                console.error('Error removing from storage:', chrome.runtime.lastError);
-                setRuntimeError(`Failed to reset: ${chrome.runtime.lastError.message}`);
-                return;
-            }
-
-            chrome.tabs.sendMessage(currentTab.id!, {
-                action: 'setDirection',
-                direction: 'ltr'
-            }, () => {
-                if (chrome.runtime.lastError) {
-                    console.error('Error sending message:', chrome.runtime.lastError);
-                    setRuntimeError(`Failed to apply reset: ${chrome.runtime.lastError.message}`);
-                }
-            });
-        });
+    const [type, setType] = useState<string>('text');
+    const [value, setValue] = useState<string>('');
+    const [fieldName, setFieldName] = useState('')
+    const handleValueChange = (e: string) => {
+        setValue(e);
     };
 
-    if (isLoading) {
-        return (
-            <div className="popup-container">
-                <div className="loading">Loading...</div>
-            </div>
-        );
-    }
 
-    if (initError) {
-        return (
-            <div className="popup-container">
-                <div className="error-message">
-                    <h3>Error</h3>
-                    <p>{initError}</p>
-                    <p style={{ fontSize: '12px', marginTop: '10px' }}>
-                        Make sure you're testing this in a Chrome extension environment.
-                    </p>
-                </div>
-            </div>
-        );
-    }
+    const handleAddField = () => {
+        setMyQuickInfo([...myQuickInfo, { field: fieldName, title: value, type: type }]);
+        setFieldName('');
+        setValue('');
+        setType('text');
+    };
+
 
     return (
-        <div className="popup-container">
-            <h3>Text Direction</h3>
+        <div className="bg-gray-200 max-w-[600px] max-h-[400px] overflow-y-auto rounded-xl p-3">
+            <h3 className='text-center shadow-sm rounded-xl mb-4'>Have Your Info Quickley</h3>
 
-            {runtimeError && (
+            {/* {runtimeError && (
                 <div className="error-message" style={{ marginBottom: '10px' }}>
                     <p style={{ color: 'red', fontSize: '12px' }}>{runtimeError}</p>
                 </div>
-            )}
+            )} */}
 
-            <div className="toggle-section">
-                <span className="direction-label">LTR</span>
-                <ToggleSwitch
-                    isOn={currentDirection === 'rtl'}
-                    onToggle={(isOn: boolean) => handleToggle(isOn ? 'rtl' : 'ltr')}
-                />
-                <span className="direction-label">RTL</span>
+            <div >
+                <label>Field Name</label>
+                <div className="flex items-start gap-3">
+                    {
+                        type == 'textarea' ?
+                            <textarea className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2'></textarea> :
+                            <>
+                                <input type="text" value={fieldName} onChange={(e) => setFieldName(e.target.value)} className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2' />
+                                <input className='bg-gray-400 focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2'
+                                    type={type} onChange={(e) => handleValueChange(e.target.value)} value={value} />
+                            </>
+                    }
+                    <select className='bg-gray-400 text-white focus:outline-blue-50 rounded-xl border-2 border-gray-400 p-2' onChange={(e) => setType(e.target.value)}>
+                        <option value="text">text</option>
+                        {/* <option value="password">password</option> */}
+                        <option value="email">email</option>
+                        <option value="number">number</option>
+                        <option value="textarea">textarea</option>
+                    </select>
+                    <button onClick={handleAddField} className='bg-green-400 rounded-xl border-2 border-green-400 p-2'>Save</button>
+                </div>
             </div>
+            {
+                myQuickInfo.map((item, index) => (
+                    <div key={index} className='mt-2'>
+                        <label className='capitalize'>{item.field}</label>
+                        <div className="flex items-center bg-gray-100 rounded-xl p-2 justify-between">
+                            <h2>
+                                {item.title}
+                            </h2>
 
-            <div className="status">
-                Current: <strong>{currentDirection.toUpperCase()}</strong>
-            </div>
+                            <CopyButton textToCopy={item.title} />
+                        </div>
+                    </div>
+                ))
+            }
 
-            <button
-                className="reset-btn"
-                onClick={handleReset}
-                disabled={!currentTab}
-            >
-                Reset for this site
-            </button>
+
         </div>
     );
 };
