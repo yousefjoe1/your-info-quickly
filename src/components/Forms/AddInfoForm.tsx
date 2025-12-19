@@ -100,7 +100,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                         </label>
                         <select
                             id="type"
-                            className='bg-brand-input text-brand-text focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-3 text-lg cursor-pointer appearance-none transition-all'
+                            className='bg-brand-input text-brand-text focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-2 text-lg cursor-pointer appearance-none transition-all'
                             onChange={(e) => setType(e.target.value)}
                         >
                             <option value="text">Text</option>
@@ -110,7 +110,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                         </select>
                     </div>
 
-                    <button type='submit' className='save-button h-[54px] px-8 text-lg'>
+                    <button type='submit' className='save-button h-[50px] px-3 text-sm'>
                         Save Info
                     </button>
                 </div>
