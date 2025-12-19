@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { MyQuickInfo } from '../types';
-import CopyButton from './Buttons/CopyButton';
-import { BiTrash } from 'react-icons/bi';
 import { useToast } from '../hooks/useToast';
 import Toast from './Toasts/Toast';
 import AddInfoForm from './Forms/AddInfoForm';
 import { getData, saveData } from '../lib/actionFunctions';
+import InfoCard from './InfoCard/InfoCard';
 
 const Popup: React.FC = () => {
     const { toast, showToast, hideToast } = useToast();
+
 
     const [reload, setReload] = useState(false)
 
@@ -27,13 +27,23 @@ const Popup: React.FC = () => {
     const getMyInfo = async () => {
         const res = await getData();
         setMyQuickInfo(res)
-
     }
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getMyInfo()
     }, [reload]);
+
+    const editInfo = async (newInfo: MyQuickInfo, index: number) => {
+        const updatedInfo = [...myQuickInfo]
+        updatedInfo[index] = newInfo
+        setMyQuickInfo(updatedInfo)
+        const res = await saveData(updatedInfo)
+        if (res) {
+            showToast('Data updated successfully', 'success');
+            setReload(!reload)
+        }
+    }
 
 
     return (
@@ -54,29 +64,12 @@ const Popup: React.FC = () => {
 
                 {
                     myQuickInfo.map((item, index) => (
-                        <div key={index} className='mt-2'>
-                            <label className='capitalize text-brand-label font-medium'>{item.field}</label>
-                            <div className="flex items-center gap-2 bg-brand-input rounded-xl p-2 justify-between flex-wrap border border-brand-border">
-                                <h2 className='whitespace-break-spaces text-brand-text'>
-                                    {item.title}
-                                </h2>
-
-                                <div className='flex items-center gap-1'>
-                                    <CopyButton textToCopy={item.title} />
-                                    <button
-                                        onClick={() => deleteData(index)}
-                                        className='bg-red-500 hover:bg-red-600 rounded-xl border-2 border-red-500 p-1 transition-colors'
-                                    >
-                                        <BiTrash size={14} className='text-white' />
-                                    </button>
-
-                                </div>
-
-                            </div>
-                        </div>
+                        <InfoCard editInfo={editInfo} index={index} item={item} deleteData={deleteData} />
                     ))
                 }
             </div>
+
+
 
 
         </div>
