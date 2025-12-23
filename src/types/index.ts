@@ -17,4 +17,5 @@ export interface MyQuickInfo {
   field: string;
   title: string;
   type: string;
+  tags?: string[];
 }

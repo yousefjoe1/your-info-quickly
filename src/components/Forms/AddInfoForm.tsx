@@ -104,6 +104,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                             onChange={(e) => setType(e.target.value)}
                         >
                             <option value="text">Text</option>
+                            <option value="url">Url/Link</option>
                             <option value="email">Email</option>
                             <option value="number">Number</option>
                             <option value="textarea">Textarea</option>

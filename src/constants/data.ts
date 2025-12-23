@@ -1,4 +1,4 @@
-const basicsInfo = [
+export const basicsInfo = [
     {
         field: "Name",
         title: "",
@@ -48,42 +48,3 @@ const basicsInfo = [
         tags: ["portfolio", "website", "web site", "projects", "معرض الأعمال", "الموقع الشخصي", "موقعك", "رابط أعمالك"]
     }
 ];
-
-chrome.runtime.onInstalled.addListener(async (details) => {
-    if (details.reason === "install") {
-        // Check if data already exists just to be safe
-        chrome.storage.local.get("info", (result) => {
-            if (!result.info) {
-                chrome.storage.local.set({ info: basicsInfo }, () => {
-                    console.log("✅ Initialized basic info for the first time.");
-                });
-            }
-        });
-    }
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
-  // GET
-  if (message.action === 'getData') {
-    chrome.storage.local.get(['info'], (result) => {
-      sendResponse({
-        success: true,
-        data: result.info || []
-      });
-    });
-    return true; // ⬅️ مهم
-  }
-
-  // SAVE
-  if (message.action === 'saveData') {
-    chrome.storage.local.set(
-      { info: message.data },
-      () => {
-        sendResponse({ success: true });
-      }
-    );
-    return true; // ⬅️ مهم جدًا
-  }
-
-});

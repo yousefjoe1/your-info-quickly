@@ -25,7 +25,7 @@ const CopyButton = ({ textToCopy }: { textToCopy: string }) => {
         <>
             <button
                 onClick={handleCopy}
-                className="flex rounded-lg p-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                className="flex rounded-lg p-1 bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:bg-green-400"
                 disabled={copied}
             >
                 {copied ? (

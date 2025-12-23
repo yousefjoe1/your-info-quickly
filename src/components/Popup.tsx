@@ -45,9 +45,29 @@ const Popup: React.FC = () => {
         }
     }
 
+    const handleMagicFill = async (myQuickInfo: MyQuickInfo[]) => {
+        // 1. جلب التاب المفتوحة حالياً
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        if (tab?.id) {
+            // 2. إرسال البيانات (myQuickInfo) إلى الكونتنت سكريبت
+            chrome.tabs.sendMessage(tab.id, {
+                action: "autoFillForm",
+                data: myQuickInfo
+            }, (response) => {
+                console.log("🚀 ~ handleMagicFill ~ response:", response)
+                if (response?.status === "success") {
+
+                    showToast('Data filled successfully', 'success');
+                } else {
+                    showToast('Failed to fill data', 'error');
+                }
+            });
+        }
+    };
 
     return (
-        <div className="bg-brand-bg max-w-[600px] overflow-y-hidden rounded-xl p-3 border border-brand-border">
+        <div className="bg-brand-bg max-w-[600px] h-full overflow-y-auto rounded-xl p-3 border border-brand-border">
             <h3 className='text-center text-brand-text shadow-sm rounded-xl mb-4 font-semibold'>Have Your Info Quickly</h3>
 
             {toast && (
@@ -60,7 +80,7 @@ const Popup: React.FC = () => {
 
             <AddInfoForm myQuickInfo={myQuickInfo} setMyQuickInfo={setMyQuickInfo} />
 
-            <div className='max-h-[300px] overflow-y-auto p-2'>
+            <div className='max-h-[300px] overflow-y-auto p-2 pb-4'>
 
                 {
                     myQuickInfo.map((item, index) => (
@@ -68,6 +88,13 @@ const Popup: React.FC = () => {
                     ))
                 }
             </div>
+            <button
+                type="button" // مهم جداً لكي لا يعمل Submit للفورم
+                onClick={() => handleMagicFill(myQuickInfo)}
+                className="bg-purple-600 w-full justify-center hover:bg-purple-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-lg"
+            >
+                ✨ Magic Auto-fill
+            </button>
 
 
 

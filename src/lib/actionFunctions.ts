@@ -1,6 +1,9 @@
 import type { MyQuickInfo } from "../types";
 
 export const saveData = (newData: unknown[]): Promise<boolean> => {
+    if (!chrome?.runtime) {
+        return Promise.resolve(false)
+    }
     return new Promise((resolve) => {
         chrome.runtime.sendMessage(
             { action: 'saveData', data: newData },
@@ -38,3 +41,4 @@ export const getData = async (): Promise<MyQuickInfo[]> => {
         );
     });
 };
+
