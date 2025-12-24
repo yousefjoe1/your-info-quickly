@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+
+.input-style {
+    @apply bg-brand-input text-brand-text placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-1 px-2 text-lg transition-all
+}
+
 @theme {
     /* تعريف الألوان كمتغيرات CSS - Light Mode */
     --color-brand-bg: #ffffff;

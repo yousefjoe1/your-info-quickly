@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useToast } from '../../hooks/useToast';
-import type { MyQuickInfo } from '../../types';
+import type { MyQuickInfo, Tags } from '../../types';
 import { saveData } from '../../lib/actionFunctions';
 import Toast from '../Toasts/Toast';
 
@@ -13,6 +13,9 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
     const [type, setType] = useState<string>('text');
     const [value, setValue] = useState<string>('');
     const [fieldName, setFieldName] = useState('')
+    const [tags, setTags] = useState<Tags[]>([])
+
+    const [tagName, setTagName] = useState('')
 
     const handleValueChange = (e: string) => {
         setValue(e);
@@ -25,7 +28,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
             showToast('Please fill all fields', 'error');
             return;
         }
-        const newInfo = [...myQuickInfo, { field: fieldName, title: value, type: type }];
+        const newInfo = [...myQuickInfo, { field: fieldName, title: value, type: type, tags: tags }];
         setMyQuickInfo(newInfo);
         setFieldName('');
         setValue('');
@@ -40,6 +43,15 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
     useEffect(() => {
         fieldRef.current?.focus()
     }, [])
+
+    // handleAddTag
+    const handleAddTag = () => {
+        if (tagName.trim() !== '') {
+            const tagsArray = tags?.length ? tags : []
+            setTags([...tagsArray, { tagName: tagName.trim(), id: Date.now() + Math.random() }]);
+            setTagName('');
+        }
+    };
 
 
     return (
@@ -64,7 +76,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                         type="text"
                         value={fieldName}
                         onChange={(e) => setFieldName(e.target.value)}
-                        className='bg-brand-input text-brand-text placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-1 px-2 text-lg transition-all'
+                        className='input-style'
                     />
                 </div>
 
@@ -86,7 +98,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                                 type={type}
                                 value={value}
                                 onChange={(e) => handleValueChange(e.target.value)}
-                                className='bg-brand-input text-brand-text focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-1 px-2 text-lg transition-all'
+                                className='input-style'
                             />
                         )}
                     </div>
@@ -100,7 +112,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                         </label>
                         <select
                             id="type"
-                            className='bg-brand-input text-brand-text focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-2 text-lg cursor-pointer appearance-none transition-all'
+                            className='input-style'
                             onChange={(e) => setType(e.target.value)}
                         >
                             <option value="text">Text</option>
@@ -114,6 +126,16 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                     <button type='submit' className='save-button h-[50px] px-3 text-sm'>
                         Save Info
                     </button>
+                </div>
+
+                <div className='flex flex-col gap-2'>
+                    <label className='text-base font-bold text-brand-label capitalize' htmlFor="tags">Add Tags</label>
+                    <input
+                        id='tags'
+                        className='input-style'
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                        type="text"
+                        onChange={(e) => setTagName(e.target.value)} />
                 </div>
             </div>
         </form>

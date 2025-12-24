@@ -17,5 +17,11 @@ export interface MyQuickInfo {
   field: string;
   title: string;
   type: string;
-  tags?: string[];
+  tags?: Tags[];
+}
+
+
+export interface Tags {
+  id?: number | string;
+  tagName: string;
 }

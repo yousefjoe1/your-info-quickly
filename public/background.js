@@ -9,7 +9,7 @@ const basicsInfo = [
         field: "Phone",
         title: "",
         type: "tel",
-        tags: ["your phone", "phone number", "what's app", "cell phone", "الهاتف", "رقم الجوال", "رقم الهاتف", "واتساب"]
+        tags: ["your phone", "phone number", "what's app", "cell phone", "الهاتف", "رقم الجوال", "رقم الهاتف", "واتساب",'رقم الواتس']
     },
     {
         field: "Email",
@@ -33,7 +33,7 @@ const basicsInfo = [
         field: "Location",
         title: "",
         type: "text",
-        tags: ["location", "city", "الموقع", "العنوان", "المدينة", "محل الإقامة"]
+        tags: ["location", "city", "الموقع", "العنوان", "المدينة", "محل الإقامة",'country','البلد','الدولة']
     },
     {
         field: "Github",
