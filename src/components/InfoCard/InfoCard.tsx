@@ -4,7 +4,7 @@ import type { MyQuickInfo, Tags } from '../../types'
 import { BiEdit, BiTrash } from 'react-icons/bi'
 import TagsComponent from '../Tags/Tags'
 
-const InfoCard = ({ item, deleteData, index, editInfo }: { item: MyQuickInfo, deleteData: (index: number) => void, index: number, editInfo: (updatedInfo: MyQuickInfo, index: number) => void }) => {
+const InfoCard = ({ item, deleteData, editInfo }: { item: MyQuickInfo, deleteData: (id: number | string | undefined) => void, editInfo: (updatedInfo: MyQuickInfo) => void }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const editRefDialog = useRef<HTMLDialogElement>(null);
 
@@ -22,13 +22,13 @@ const InfoCard = ({ item, deleteData, index, editInfo }: { item: MyQuickInfo, de
     };
 
     const handleDelete = () => {
-        deleteData(index)
+        deleteData(item?.id)
         dialogRef.current?.close();
     };
 
     const saveChanges = async () => {
-        const updatedInfo = { ...item, title: newTitle }
-        editInfo(updatedInfo, index)
+        const updatedInfo = { ...item, title: newTitle, tags: infoTags, field: editFieldName }
+        editInfo(updatedInfo)
     }
 
     const handleAddTag = () => {
@@ -97,36 +97,42 @@ const InfoCard = ({ item, deleteData, index, editInfo }: { item: MyQuickInfo, de
 
             <dialog
                 ref={editRefDialog}
-                className='bg-brand-bg w-[90%] text-brand-text rounded-xl p-6 border border-brand-border backdrop:bg-black/30 backdrop:blur-sm absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2'
+                className='bg-brand-bg w-[90%] flex flex-col gap-3 text-brand-text rounded-xl p-6 border border-brand-border backdrop:bg-black/30 backdrop:blur-sm absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2'
             >
-                <div>
-                    <input type="text" className='input-style' value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+                <div className='flex flex-col gap-1'>
+                    <label htmlFor="title">Title</label>
+                    <input type="text" id="title" className='input-style' value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
 
                 </div>
 
-                <div>
-
-                    <input type="text" className='input-style' value={editFieldName} onChange={(e) => setEditFieldName(e.target.value)} />
+                <div className='flex flex-col gap-1'>
+                    <label htmlFor="field">Field</label>
+                    <input type="text" id="field" className='input-style' value={editFieldName} onChange={(e) => setEditFieldName(e.target.value)} />
                 </div>
 
 
                 {/* tags */}
-                <div>
-                    <div className="flex">
-                        <h3>Tags</h3>
-                        {
-                            infoTags?.map((tag) =>
-                                <TagsComponent key={tag.id} tag={tag} handleRemoveTag={handleRemoveTags} />
-                            )
-                        }
-
-                    </div>
+                <div className='flex flex-col gap-2'>
+                    <label htmlFor="tag">Tag</label>
                     <input type="text"
+                        id="tag"
                         value={newTag}
                         onChange={(e) => setNewTag(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
                         className='input-style'
                     />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h3>Tags:</h3>
+                        {infoTags.length > 0 ?
+                            infoTags?.map((tag) =>
+                                <TagsComponent key={tag.id} tag={tag} handleRemoveTag={handleRemoveTags} />
+                            )
+                            :
+                            <p>No tags added</p>
+                        }
+
+                    </div>
+
                 </div>
 
 

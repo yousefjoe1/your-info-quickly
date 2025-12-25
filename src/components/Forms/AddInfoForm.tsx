@@ -28,7 +28,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
             showToast('Please fill all fields', 'error');
             return;
         }
-        const newInfo = [...myQuickInfo, { field: fieldName, title: value, type: type, tags: tags }];
+        const newInfo = [...myQuickInfo, { field: fieldName, title: value, type: type, tags: tags, id: Date.now() + Math.random() }];
         setMyQuickInfo(newInfo);
         setFieldName('');
         setValue('');
@@ -155,7 +155,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                 </div>
             </div>
 
-            <button onClick={handleAddField} type='submit' className='save-button h-[50px] px-3 text-sm'>
+            <button onClick={handleAddField} className='save-button h-[50px] px-3 text-sm'>
                 Save Info
             </button>
         </>

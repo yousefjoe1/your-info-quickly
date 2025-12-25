@@ -14,8 +14,8 @@ const Popup: React.FC = () => {
 
     const [myQuickInfo, setMyQuickInfo] = useState<MyQuickInfo[]>([]);
 
-    const deleteData = async (index: number) => {
-        const filterd = myQuickInfo.filter((_, idx) => idx != index)
+    const deleteData = async (id: number | string | undefined) => {
+        const filterd = myQuickInfo.filter((info) => info.id != id)
         setMyQuickInfo(filterd);
         const res = await saveData(filterd)
         if (res) {
@@ -34,8 +34,9 @@ const Popup: React.FC = () => {
         getMyInfo()
     }, [reload]);
 
-    const editInfo = async (newInfo: MyQuickInfo, index: number) => {
+    const editInfo = async (newInfo: MyQuickInfo) => {
         const updatedInfo = [...myQuickInfo]
+        const index = updatedInfo.findIndex((info) => info.id === newInfo.id)
         updatedInfo[index] = newInfo
         setMyQuickInfo(updatedInfo)
         const res = await saveData(updatedInfo)
@@ -83,8 +84,8 @@ const Popup: React.FC = () => {
             <div className='max-h-[300px] overflow-y-auto p-2 pb-4'>
 
                 {
-                    myQuickInfo.map((item, index) => (
-                        <InfoCard editInfo={editInfo} index={index} item={item} deleteData={deleteData} />
+                    myQuickInfo.map((item) => (
+                        <InfoCard editInfo={editInfo} key={item.id} item={item} deleteData={deleteData} />
                     ))
                 }
             </div>

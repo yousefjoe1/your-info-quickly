@@ -14,6 +14,7 @@ export interface ChromeMessage {
 }
 
 export interface MyQuickInfo {
+  id?: number;
   field: string;
   title: string;
   type: string;
