@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import CopyButton from '../Buttons/CopyButton'
 import type { MyQuickInfo, Tags } from '../../types'
 import { BiEdit, BiTrash } from 'react-icons/bi'
+import TagsComponent from '../Tags/Tags'
 
 const InfoCard = ({ item, deleteData, index, editInfo }: { item: MyQuickInfo, deleteData: (index: number) => void, index: number, editInfo: (updatedInfo: MyQuickInfo, index: number) => void }) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -39,7 +40,7 @@ const InfoCard = ({ item, deleteData, index, editInfo }: { item: MyQuickInfo, de
     };
 
 
-    const handleRemoveTag = (id: number) => {
+    const handleRemoveTags = (id: number | string | undefined) => {
         const updatedTags = infoTags.filter((tag) => tag.id !== id);
         setInfoTags(updatedTags);
     };
@@ -84,8 +85,9 @@ const InfoCard = ({ item, deleteData, index, editInfo }: { item: MyQuickInfo, de
 
                     </div>
 
+                    <h3 className='text-brand-label'>Tags:</h3>
                     <div className='flex gap-2'>
-                        {item.tags?.map((tag) => <span key={tag.id}>{tag.tagName}</span>)}
+                        {item.tags?.map((tag) => <TagsComponent key={tag.id} tag={tag} />)}
                     </div>
 
 
@@ -113,10 +115,9 @@ const InfoCard = ({ item, deleteData, index, editInfo }: { item: MyQuickInfo, de
                     <div className="flex">
                         <h3>Tags</h3>
                         {
-                            infoTags?.map((tag, index) => <div className='flex gap-3 p-1 shadow-sm border-brand-border border rounded-xl px-2' key={index}>
-                                <span>{tag.tagName}</span>
-                                <button onClick={() => handleRemoveTag(index)} >X</button>
-                            </div>)
+                            infoTags?.map((tag) =>
+                                <TagsComponent key={tag.id} tag={tag} handleRemoveTag={handleRemoveTags} />
+                            )
                         }
 
                     </div>

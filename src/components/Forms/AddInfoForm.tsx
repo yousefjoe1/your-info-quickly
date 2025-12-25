@@ -3,6 +3,7 @@ import { useToast } from '../../hooks/useToast';
 import type { MyQuickInfo, Tags } from '../../types';
 import { saveData } from '../../lib/actionFunctions';
 import Toast from '../Toasts/Toast';
+import TagsComponent from '../Tags/Tags';
 
 
 const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo[], setMyQuickInfo: React.Dispatch<React.SetStateAction<MyQuickInfo[]>> }) => {
@@ -22,8 +23,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
     };
 
 
-    const handleAddField = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+    const handleAddField = async () => {
         if (value == '' || fieldName == '') {
             showToast('Please fill all fields', 'error');
             return;
@@ -37,6 +37,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
         if (res) {
             fieldRef.current?.focus()
             showToast('Data saved successfully', 'success');
+            setTags([]);
         }
     };
 
@@ -54,91 +55,110 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
     };
 
 
+    const handleRemoveTag = (id: number | string | undefined) => {
+        const newTags = tags.filter((tag) => tag.id !== id);
+        setTags(newTags);
+    };
+
+
     return (
-        <form className='w-full p-2 bg-brand-bg rounded-2xl shadow-sm transition-colors duration-300' onSubmit={handleAddField}>
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={hideToast}
-                />
-            )}
-            <div className="flex gap-1 flex-wrap">
-
-                {/* Field Name */}
-                <div className='flex flex-col gap-2 w-full'>
-                    <label className="text-base font-bold text-brand-label capitalize tracking-wider">
-                        Field Name
-                    </label>
-                    <input
-                        ref={fieldRef}
-                        placeholder='e.g. Full Name'
-                        type="text"
-                        value={fieldName}
-                        onChange={(e) => setFieldName(e.target.value)}
-                        className='input-style'
+        <>
+            <form className='w-full bg-brand-bg rounded-2xl shadow-sm transition-colors duration-300' onSubmit={handleAddField}>
+                {toast && (
+                    <Toast
+                        message={toast.message}
+                        type={toast.type}
+                        onClose={hideToast}
                     />
-                </div>
+                )}
+                <div className="flex gap-1 flex-wrap">
 
-                {/* Value Area */}
-                <div className='w-full'>
+                    {/* Field Name */}
                     <div className='flex flex-col gap-2 w-full'>
-                        <label htmlFor="value" className="text-base font-bold text-brand-label capitalize tracking-wider">
-                            Value
+                        <label className="text-base font-bold text-brand-label capitalize tracking-wider">
+                            Field Name
                         </label>
-                        {type === 'textarea' ? (
-                            <textarea
-                                id="value"
-                                onChange={(e) => handleValueChange(e.target.value)}
-                                className='bg-brand-input text-brand-text focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-1 px-2 text-lg min-h-[120px] transition-all'
-                            ></textarea>
-                        ) : (
-                            <input
-                                id="value"
-                                type={type}
-                                value={value}
-                                onChange={(e) => handleValueChange(e.target.value)}
-                                className='input-style'
-                            />
-                        )}
-                    </div>
-                </div>
-
-                {/* Type & Action */}
-                <div className='flex items-end flex-wrap gap-4 w-full'>
-                    <div className='flex flex-col gap-2 grow'>
-                        <label htmlFor="type" className="text-base font-bold text-brand-label capitalize tracking-wider">
-                            Field Type
-                        </label>
-                        <select
-                            id="type"
+                        <input
+                            ref={fieldRef}
+                            placeholder='e.g. Full Name'
+                            type="text"
+                            value={fieldName}
+                            onChange={(e) => setFieldName(e.target.value)}
                             className='input-style'
-                            onChange={(e) => setType(e.target.value)}
-                        >
-                            <option value="text">Text</option>
-                            <option value="url">Url/Link</option>
-                            <option value="email">Email</option>
-                            <option value="number">Number</option>
-                            <option value="textarea">Textarea</option>
-                        </select>
+                        />
                     </div>
 
-                    <button type='submit' className='save-button h-[50px] px-3 text-sm'>
-                        Save Info
-                    </button>
-                </div>
+                    {/* Value Area */}
+                    <div className='w-full'>
+                        <div className='flex flex-col gap-2 w-full'>
+                            <label htmlFor="value" className="text-base font-bold text-brand-label capitalize tracking-wider">
+                                Value
+                            </label>
+                            {type === 'textarea' ? (
+                                <textarea
+                                    id="value"
+                                    onChange={(e) => handleValueChange(e.target.value)}
+                                    className='bg-brand-input text-brand-text focus:ring-2 focus:ring-blue-500 focus:outline-none rounded-xl border border-brand-border p-1 px-2 text-lg min-h-[120px] transition-all'
+                                ></textarea>
+                            ) : (
+                                <input
+                                    id="value"
+                                    type={type}
+                                    value={value}
+                                    onChange={(e) => handleValueChange(e.target.value)}
+                                    className='input-style'
+                                />
+                            )}
+                        </div>
+                    </div>
 
-                <div className='flex flex-col gap-2'>
-                    <label className='text-base font-bold text-brand-label capitalize' htmlFor="tags">Add Tags</label>
-                    <input
-                        id='tags'
-                        className='input-style'
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                        type="text"
-                        onChange={(e) => setTagName(e.target.value)} />
+                    {/* Type & Action */}
+                    <div className='flex items-end flex-wrap gap-4 w-full'>
+                        <div className='flex flex-col gap-2 grow'>
+                            <label htmlFor="type" className="text-base font-bold text-brand-label capitalize tracking-wider">
+                                Field Type
+                            </label>
+                            <select
+                                id="type"
+                                className='input-style'
+                                onChange={(e) => setType(e.target.value)}
+                            >
+                                <option value="text">Text</option>
+                                <option value="url">Url/Link</option>
+                                <option value="email">Email</option>
+                                <option value="number">Number</option>
+                                <option value="textarea">Textarea</option>
+                            </select>
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+            </form>
+
+            <div className='flex flex-col gap-1 mt-2'>
+                <label className='text-base font-bold text-brand-label capitalize' htmlFor="tags">Add Tags</label>
+                <input
+                    value={tagName}
+                    id='tags'
+                    className='input-style'
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+                    type="text"
+                    onChange={(e) => setTagName(e.target.value)} />
+
+                <div className='flex items-center gap-3 p-2'>
+                    {tags.map((tag) => (
+                        <TagsComponent tag={tag} handleRemoveTag={handleRemoveTag} />
+                    ))}
                 </div>
             </div>
-        </form>
+
+            <button onClick={handleAddField} type='submit' className='save-button h-[50px] px-3 text-sm'>
+                Save Info
+            </button>
+        </>
     )
 }
 

@@ -12,6 +12,9 @@
     --color-brand-text: #0f172a;
     --color-brand-label: #475569;
     --color-brand-border: #e2e8f0;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-success: #22c55d;
 }
 
 /* تعديل الألوان عند تفعيل Dark Mode */
@@ -22,6 +25,9 @@
         --color-brand-text: #f1f5f9;
         --color-brand-label: #cbd5e1;
         --color-brand-border: #334155;
+        --color-warning: #f59e0b;
+        --color-error: #ef4444;
+        --color-success: #22c55d;
     }
 }
 
