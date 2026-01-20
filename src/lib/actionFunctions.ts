@@ -1,4 +1,4 @@
-import type { MyQuickInfo } from "../types";
+import type { MyQuickInfo } from "../features/fill-forms/types";
 
 export const saveData = (newData: unknown[]): Promise<boolean> => {
     if (!chrome?.runtime) {

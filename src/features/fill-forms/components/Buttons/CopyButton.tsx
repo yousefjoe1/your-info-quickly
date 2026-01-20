@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BiCheck } from 'react-icons/bi';
 import { MdContentCopy } from 'react-icons/md';
 import { useToast } from '../../hooks/useToast';
-import Toast from '../Toasts/Toast';
+import Toast from '../../../../components/Toasts/Toast';
 
 const CopyButton = ({ textToCopy }: { textToCopy: string }) => {
     const { showToast, toast, hideToast } = useToast();

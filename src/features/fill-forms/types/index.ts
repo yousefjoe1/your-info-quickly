@@ -8,11 +8,6 @@ export interface StorageData {
   [hostname: string]: 'ltr' | 'rtl';
 }
 
-export interface ChromeMessage {
-  action: 'setDirection';
-  direction: 'ltr' | 'rtl';
-}
-
 export interface MyQuickInfo {
   id?: number;
   field: string;
