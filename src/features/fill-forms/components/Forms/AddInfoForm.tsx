@@ -166,7 +166,7 @@ const AddInfoForm = ({ myQuickInfo, setMyQuickInfo }: { myQuickInfo: MyQuickInfo
                         </div>
                     </div>
 
-                    <button onClick={handleAddField} className='save-button h-[50px] px-3 text-sm'>
+                    <button onClick={handleAddField} className='save-button h-[30px] px-3 text-sm'>
                         Save Info
                     </button>
 

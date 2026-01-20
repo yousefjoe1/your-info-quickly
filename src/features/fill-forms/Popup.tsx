@@ -66,9 +66,7 @@ const Popup: React.FC = () => {
     };
 
     return (
-        <div className="bg-brand-bg max-w-[600px] h-full overflow-y-auto rounded-xl p-3 border border-brand-border">
-            <h3 className='text-center text-brand-text shadow-sm rounded-xl mb-4 font-semibold'>Have Your Info Quickly</h3>
-
+        <div className="max-w-[600px] h-full overflow-y-auto rounded-xl p-3 border border-brand-border">
             {toast && (
                 <Toast
                     message={toast.message}
