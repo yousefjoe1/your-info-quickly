@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getData, saveData } from '../lib/actionFunctions';
-import type { MyQuickInfo } from '../types';
 import { useToast } from './useToast';
+import type { MyQuickInfo } from '../types';
+import { getData, saveData } from '../../../lib/actionFunctions';
 
 const useInfo = () => {
     const [myQuickInfo, setMyQuickInfo] = useState<MyQuickInfo[]>([]);

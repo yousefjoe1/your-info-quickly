@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ToastType } from "../components/Toasts/Toast";
+import type { ToastType } from "../../../components/Toasts/Toast";
 interface ToastState {
     message: string;
     type: ToastType;
