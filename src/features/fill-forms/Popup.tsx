@@ -65,6 +65,7 @@ const Popup: React.FC = () => {
         }
     };
 
+
     return (
         <div className="max-w-[600px] h-full overflow-y-auto rounded-xl p-3 border border-brand-border">
             {toast && (
@@ -74,6 +75,9 @@ const Popup: React.FC = () => {
                     onClose={hideToast}
                 />
             )}
+
+
+
 
             <AddInfoForm myQuickInfo={myQuickInfo} setMyQuickInfo={setMyQuickInfo} />
             <button
