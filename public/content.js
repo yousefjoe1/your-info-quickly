@@ -664,162 +664,509 @@ function fillInputElement(element, value) {
 // ============================================
 // 1. UI SETUP (Shadow DOM)
 // ============================================
-const container = document.createElement('div');
-container.id = 'my-smart-helper-root';
-const shadow = container.attachShadow({ mode: 'open' });
+// const container = document.createElement('div');
+// container.id = 'my-smart-helper-root';
+// const shadow = container.attachShadow({ mode: 'open' });
 
-const btn = document.createElement('button');
-btn.innerHTML = '✨ Fill Field';
-btn.style.cssText = `
-  position: absolute;
-  z-index: 2147483647;
-  background: #4F46E5;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: none;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255,255,255,0.1);
+// const btn = document.createElement('button');
+// btn.innerHTML = '✨ Fill Field';
+// btn.style.cssText = `
+//   position: absolute;
+//   z-index: 2147483647;
+//   background: #4F46E5;
+//   color: white;
+//   border: none;
+//   padding: 6px 12px;
+//   border-radius: 6px;
+//   cursor: pointer;
+//   display: none;
+//   font-family: system-ui, -apple-system, sans-serif;
+//   font-size: 13px;
+//   font-weight: 600;
+//   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+//   border: 1px solid rgba(255,255,255,0.1);
+// `;
+
+// shadow.appendChild(btn);
+// document.body.appendChild(container);
+
+// let activeInput = null;
+// let pendingValue = ""; // Stores the value found during matching
+
+// // ============================================
+// // 2. SMART SEARCH LOGIC
+// // ============================================
+
+// /**
+//  * Strategy: Find the input physically closest to the clicked element
+//  */
+// function findNearestInput(element) {
+//   // 1. If it's a label with a 'for' attribute
+//   if (element.tagName === 'LABEL' && element.htmlFor) {
+//     const input = document.getElementById(element.htmlFor);
+//     if (input) return input;
+//   }
+
+//   // 2. Check if the input is a child of this element
+//   const nestedInput = element.querySelector('input, textarea');
+//   if (nestedInput) return nestedInput;
+
+//   // 3. Check immediate siblings
+//   let next = element.nextElementSibling;
+//   if (next) {
+//     const sibInput = next.tagName === 'INPUT' || next.tagName === 'TEXTAREA' 
+//                      ? next 
+//                      : next.querySelector('input, textarea');
+//     if (sibInput) return sibInput;
+//   }
+
+//   // 4. Check Parent's scope (e.g., in a table cell or form group)
+//   const parent = element.parentElement;
+//   if (parent) {
+//     const parentInput = parent.querySelector('input, textarea');
+//     if (parentInput) return parentInput;
+//   }
+
+//   return null;
+// }
+
+// /**
+//  * Matches element text against your data tags
+//  */
+// function getMatchingData(text, dataArray) {
+//   const cleanText = text.toLowerCase().trim();
+//   // Loop through your data (this should be provided via storage or background script)
+//   return dataArray.find(item => {
+//     const terms = [item.field, ...(item.tags || [])].map(t => t.toLowerCase());
+//     return terms.some(term => cleanText.includes(term));
+//   });
+// }
+
+// // ============================================
+// // 3. EVENT LISTENERS
+// // ============================================
+
+// document.addEventListener('mousedown',async (e) => {
+//   const target = e.target;
+  
+//   // Only trigger on labels, spans, or small divs
+//   const isLabelLike = ['label', 'span', 'b', 'strong', 'p','h1','div'].includes(target.tagName) || 
+//                       (target.tagName === 'DIV' && target.innerText.length < 30);
+
+//   if (isLabelLike) {
+//     const text = target.innerText;
+    
+//     // MOCK DATA: Replace this with your actual data source (e.g. from chrome.storage)
+//     let myData = []
+//     await chrome.storage.local.get('info', (data) => {
+//       console.log("🚀 ~ data:", data)
+//       myData = data.info;
+//     });
+    
+//     console.log("🚀 ~ myData:", myData)
+//     const match = getMatchingData(text, myData);
+
+//     if (match) {
+//       const input = findNearestInput(target);
+//       if (input) {
+//         activeInput = input;
+//         pendingValue = match.title; // Set value to be filled
+        
+//         // Position Button
+//         const rect = target.getBoundingClientRect();
+//         btn.style.top = `${rect.top + window.scrollY - 35}px`;
+//         btn.style.left = `${rect.left + window.scrollX}px`;
+//         btn.style.display = 'block';
+        
+//         // Visual feedback on the input
+//         input.style.outline = "2px solid #4F46E5";
+//         setTimeout(() => input.style.outline = "", 2000);
+//       }
+//     }
+//   }
+// });
+
+// // Fill Logic
+// btn.addEventListener('mousedown', (e) => {
+//   e.preventDefault(); 
+//   if (activeInput && pendingValue) {
+//     fillInputElementNew(activeInput, pendingValue);
+//     btn.style.display = 'none';
+//   }
+// });
+
+// // Hide button when clicking elsewhere
+// document.addEventListener('click', (e) => {
+//   if (e.target.tagName !== 'BUTTON') {
+//     btn.style.display = 'none';
+//   }
+// });
+
+// // ============================================
+// // 4. YOUR CORE FILLING LOGIC (Helper Functions)
+// // ============================================
+
+// function fillInputElementNew(element, value) {
+//   const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+//   const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+  
+//   if (element.tagName === 'TEXTAREA') {
+//     nativeTextAreaValueSetter.call(element, value);
+//   } else if (element.hasAttribute('contenteditable')) {
+//     element.innerText = value;
+//   } else {
+//     nativeInputValueSetter.call(element, value);
+//   }
+  
+//   element.dispatchEvent(new Event('input', { bubbles: true }));
+//   element.dispatchEvent(new Event('change', { bubbles: true }));
+//   element.dispatchEvent(new Event('blur', { bubbles: true }));
+//   element.focus();
+// }
+
+
+
+
+
+// hover input
+// ============================================
+// AUTOFILL CONTENT SCRIPT — Hover Dropdown Only
+// ============================================
+
+const STYLES = `
+  #__af_dropdown__ {
+    position: fixed;
+    z-index: 2147483647;
+    background: #0f0f13;
+    border: 1px solid #2a2a3a;
+    border-radius: 12px;
+    padding: 6px;
+    min-width: 280px;
+    max-width: 360px;
+    max-height: 280px;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,58,237,0.15);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a3a transparent;
+  }
+  #__af_dropdown__::-webkit-scrollbar { width: 4px; }
+  #__af_dropdown__::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 4px; }
+
+  #__af_dropdown__ .__af_header__ {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #4a4a6a;
+    padding: 4px 10px 8px;
+    border-bottom: 1px solid #1a1a2a;
+    margin-bottom: 4px;
+  }
+  #__af_dropdown__ .__af_item__ {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border: 1px solid transparent;
+  }
+  #__af_dropdown__ .__af_item__:hover {
+    background: #1a1a2a;
+    border-color: #2a2a3a;
+  }
+  #__af_dropdown__ .__af_item__.__af_match__ {
+    background: rgba(124,58,237,0.08);
+    border-color: rgba(124,58,237,0.2);
+  }
+  #__af_dropdown__ .__af_item__.__af_match__:hover {
+    background: rgba(124,58,237,0.15);
+  }
+  #__af_dropdown__ .__af_dot__ {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #3a3a5a;
+    flex-shrink: 0;
+  }
+  #__af_dropdown__ .__af_item__.__af_match__ .__af_dot__ {
+    background: #7c3aed;
+    box-shadow: 0 0 6px rgba(124,58,237,0.6);
+  }
+  #__af_dropdown__ .__af_field__ {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9090b8;
+    min-width: 72px;
+    flex-shrink: 0;
+    font-family: 'Courier New', monospace;
+  }
+  #__af_dropdown__ .__af_item__.__af_match__ .__af_field__ {
+    color: #a78bfa;
+  }
+  #__af_dropdown__ .__af_sep__ {
+    color: #3a3a5a;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  #__af_dropdown__ .__af_value__ {
+    font-size: 12px;
+    color: #c8c8e8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  .__af_focused__ {
+    outline: 2px solid rgba(124,58,237,0.5) !important;
+    outline-offset: 2px !important;
+  }
 `;
 
-shadow.appendChild(btn);
-document.body.appendChild(container);
-
+// ─── STATE ──────────────────────────────────
+let profileData = [];
+let dropdown = null;
 let activeInput = null;
-let pendingValue = ""; // Stores the value found during matching
+let hideTimer = null;
+let isOverDropdown = false;
 
-// ============================================
-// 2. SMART SEARCH LOGIC
-// ============================================
+// ─── INIT ───────────────────────────────────
+function init() {
+  injectStyles();
+  loadData();
+  attachListeners();
 
-/**
- * Strategy: Find the input physically closest to the clicked element
- */
-function findNearestInput(element) {
-  // 1. If it's a label with a 'for' attribute
-  if (element.tagName === 'LABEL' && element.htmlFor) {
-    const input = document.getElementById(element.htmlFor);
-    if (input) return input;
-  }
-
-  // 2. Check if the input is a child of this element
-  const nestedInput = element.querySelector('input, textarea');
-  if (nestedInput) return nestedInput;
-
-  // 3. Check immediate siblings
-  let next = element.nextElementSibling;
-  if (next) {
-    const sibInput = next.tagName === 'INPUT' || next.tagName === 'TEXTAREA' 
-                     ? next 
-                     : next.querySelector('input, textarea');
-    if (sibInput) return sibInput;
-  }
-
-  // 4. Check Parent's scope (e.g., in a table cell or form group)
-  const parent = element.parentElement;
-  if (parent) {
-    const parentInput = parent.querySelector('input, textarea');
-    if (parentInput) return parentInput;
-  }
-
-  return null;
-}
-
-/**
- * Matches element text against your data tags
- */
-function getMatchingData(text, dataArray) {
-  const cleanText = text.toLowerCase().trim();
-  // Loop through your data (this should be provided via storage or background script)
-  return dataArray.find(item => {
-    const terms = [item.field, ...(item.tags || [])].map(t => t.toLowerCase());
-    return terms.some(term => cleanText.includes(term));
+  // Re-sync data whenever storage changes (user edited in popup)
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes.info) profileData = changes.info.newValue || [];
   });
 }
 
-// ============================================
-// 3. EVENT LISTENERS
-// ============================================
-
-document.addEventListener('mousedown',async (e) => {
-  const target = e.target;
-  
-  // Only trigger on labels, spans, or small divs
-  const isLabelLike = ['label', 'span', 'b', 'strong', 'p','h1','div'].includes(target.tagName) || 
-                      (target.tagName === 'DIV' && target.innerText.length < 30);
-
-  if (isLabelLike) {
-    const text = target.innerText;
-    
-    // MOCK DATA: Replace this with your actual data source (e.g. from chrome.storage)
-    let myData = []
-    await chrome.storage.local.get('info', (data) => {
-      console.log("🚀 ~ data:", data)
-      myData = data.info;
-    });
-    
-    console.log("🚀 ~ myData:", myData)
-    const match = getMatchingData(text, myData);
-
-    if (match) {
-      const input = findNearestInput(target);
-      if (input) {
-        activeInput = input;
-        pendingValue = match.title; // Set value to be filled
-        
-        // Position Button
-        const rect = target.getBoundingClientRect();
-        btn.style.top = `${rect.top + window.scrollY - 35}px`;
-        btn.style.left = `${rect.left + window.scrollX}px`;
-        btn.style.display = 'block';
-        
-        // Visual feedback on the input
-        input.style.outline = "2px solid #4F46E5";
-        setTimeout(() => input.style.outline = "", 2000);
-      }
-    }
-  }
-});
-
-// Fill Logic
-btn.addEventListener('mousedown', (e) => {
-  e.preventDefault(); 
-  if (activeInput && pendingValue) {
-    fillInputElementNew(activeInput, pendingValue);
-    btn.style.display = 'none';
-  }
-});
-
-// Hide button when clicking elsewhere
-document.addEventListener('click', (e) => {
-  if (e.target.tagName !== 'BUTTON') {
-    btn.style.display = 'none';
-  }
-});
-
-// ============================================
-// 4. YOUR CORE FILLING LOGIC (Helper Functions)
-// ============================================
-
-function fillInputElementNew(element, value) {
-  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-  const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-  
-  if (element.tagName === 'TEXTAREA') {
-    nativeTextAreaValueSetter.call(element, value);
-  } else if (element.hasAttribute('contenteditable')) {
-    element.innerText = value;
-  } else {
-    nativeInputValueSetter.call(element, value);
-  }
-  
-  element.dispatchEvent(new Event('input', { bubbles: true }));
-  element.dispatchEvent(new Event('change', { bubbles: true }));
-  element.dispatchEvent(new Event('blur', { bubbles: true }));
-  element.focus();
+function injectStyles() {
+  if (document.getElementById('__af_styles__')) return;
+  const style = document.createElement('style');
+  style.id = '__af_styles__';
+  style.textContent = STYLES;
+  document.head.appendChild(style);
 }
+
+function loadData() {
+  chrome.storage.local.get('info', (result) => {
+    profileData = result.info || [];
+  });
+}
+
+// ─── CONTEXT READING ────────────────────────
+// Reads everything around the input to know what field it is
+
+function getInputContext(input) {
+  const parts = [];
+
+  ['name', 'id', 'placeholder', 'autocomplete', 'aria-label', 'type'].forEach(attr => {
+    const val = input.getAttribute(attr);
+    if (val) parts.push(val);
+  });
+
+  if (input.getAttribute('aria-labelledby')) {
+    const el = document.getElementById(input.getAttribute('aria-labelledby'));
+    if (el) parts.push(el.innerText || '');
+  }
+
+  if (input.id) {
+    const label = document.querySelector(`label[for="${input.id}"]`);
+    if (label) parts.push(label.innerText || '');
+  }
+
+  let current = input.parentElement;
+  for (let i = 0; i < 4; i++) {
+    if (!current || current === document.body) break;
+    current.querySelectorAll('label, legend, span, b, strong').forEach(el => {
+      if (!el.contains(input)) parts.push(el.innerText || '');
+    });
+    current = current.parentElement;
+  }
+
+  return parts.join(' ').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function isMatch(info, context) {
+  const terms = [info.field, ...(info.tags || [])]
+    .map(t => (typeof t === 'object' ? t.tagName : t).toLowerCase())
+    .filter(t => /^[a-z\s'"\/\-_.@+:]+$/i.test(t));
+  return terms.some(term => context.includes(term));
+}
+
+// ─── DROPDOWN ───────────────────────────────
+
+function showDropdown(input) {
+  removeDropdown();
+  activeInput = input;
+  input.classList.add('__af_focused__');
+
+  const context = getInputContext(input);
+
+  // Sort matches to top, rest below
+  const sorted = [...profileData].sort((a, b) => {
+    const aM = isMatch(a, context), bM = isMatch(b, context);
+    return (aM === bM) ? 0 : aM ? -1 : 1;
+  });
+
+  dropdown = document.createElement('div');
+  dropdown.id = '__af_dropdown__';
+
+  const header = document.createElement('div');
+  header.className = '__af_header__';
+  header.textContent = 'Quick Fill — pick a field';
+  dropdown.appendChild(header);
+
+  sorted.forEach(info => {
+    const matched = isMatch(info, context);
+    const item = document.createElement('div');
+    item.className = '__af_item__' + (matched ? ' __af_match__' : '');
+
+    item.innerHTML = `
+      <div class="__af_dot__"></div>
+      <div class="__af_field__">${info.field}</div>
+      <div class="__af_sep__">·</div>
+      <div class="__af_value__" title="${info.title}">${info.title}</div>
+    `;
+
+    // mousedown not click — prevents input blur before fill fires
+    item.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      fillInput(input, info.title);
+      removeDropdown();
+    });
+
+    dropdown.appendChild(item);
+  });
+
+  positionDropdown(input);
+
+  dropdown.addEventListener('mouseenter', () => {
+    isOverDropdown = true;
+    clearTimeout(hideTimer);
+  });
+  dropdown.addEventListener('mouseleave', () => {
+    isOverDropdown = false;
+    scheduleHide();
+  });
+
+  document.body.appendChild(dropdown);
+}
+
+function positionDropdown(input) {
+  if (!dropdown) return;
+  const rect = input.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom;
+
+  // Below if there's room, otherwise above
+  if (spaceBelow > 160 || spaceBelow > window.innerHeight / 2) {
+    dropdown.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  } else {
+    dropdown.style.top = `${rect.top + window.scrollY - 284}px`;
+  }
+
+  const left = Math.min(
+    rect.left + window.scrollX,
+    window.innerWidth - 288 - 8
+  );
+  dropdown.style.left = `${left}px`;
+  dropdown.style.width = `${Math.max(rect.width, 280)}px`;
+}
+
+function removeDropdown() {
+  dropdown?.remove();
+  dropdown = null;
+  if (activeInput) {
+    activeInput.classList.remove('__af_focused__');
+    activeInput = null;
+  }
+}
+
+function scheduleHide() {
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => {
+    if (!isOverDropdown) removeDropdown();
+  }, 200);
+}
+
+// ─── FILL ───────────────────────────────────
+
+function fillInput(element, value) {
+  if (!element) return;
+  element.focus();
+
+  try {
+    if (element.tagName === 'TEXTAREA') {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(element, value);
+    } else if (element.hasAttribute('contenteditable')) {
+      element.innerText = value;
+    } else {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(element, value);
+    }
+    ['input', 'change', 'blur', 'keyup'].forEach(ev =>
+      element.dispatchEvent(new Event(ev, { bubbles: true }))
+    );
+    element.dispatchEvent(new InputEvent('input', { bubbles: true, data: value }));
+  } catch (e) {
+    // fallback
+    element.value = value;
+    element.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+}
+
+// ─── LISTENERS ──────────────────────────────
+
+function attachListeners() {
+  const INPUT_SELECTOR =
+    'input:not([type="hidden"]):not([type="submit"]):not([type="button"])' +
+    ':not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea';
+
+  document.addEventListener('mouseover', (e) => {
+    const input = e.target.closest(INPUT_SELECTOR);
+    if (!input) return;
+
+    clearTimeout(hideTimer);
+    if (activeInput === input && dropdown) return; // already open for this input
+
+    // Small delay to avoid flashing on quick mouse passes
+    hideTimer = setTimeout(() => {
+      if (profileData.length === 0) {
+        // Try one more load in case storage wasn't ready at init
+        chrome.storage.local.get('info', (result) => {
+          profileData = result.info || [];
+          if (profileData.length > 0) showDropdown(input);
+        });
+      } else {
+        showDropdown(input);
+      }
+    }, 120);
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const input = e.target.closest(INPUT_SELECTOR);
+    if (!input) return;
+    scheduleHide();
+  });
+
+  // Close on outside click
+  document.addEventListener('mousedown', (e) => {
+    if (dropdown && !dropdown.contains(e.target) && e.target !== activeInput) {
+      removeDropdown();
+    }
+  });
+
+  // Reposition on scroll/resize
+  window.addEventListener('scroll', () => {
+    if (dropdown && activeInput) positionDropdown(activeInput);
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (dropdown && activeInput) positionDropdown(activeInput);
+  });
+}
+
+// ─── START ──────────────────────────────────
+init();

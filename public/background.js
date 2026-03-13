@@ -55,6 +55,8 @@
 //     }
 // ];
 
+
+// background.js
 const basicsInfo = [
     {
         id: "name",
