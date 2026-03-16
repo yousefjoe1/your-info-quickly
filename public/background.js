@@ -1,60 +1,3 @@
-// const basicsInfo = [
-//     {
-//         field: "Name",
-//         title: "Youssef Mahmoud",
-//         type: "text",
-//         tags: ["name", "your name", "full name", "الاسم", "الاسم بالكامل", "اسمك"]
-//     },
-//     {
-//         field: "Phone",
-//         title: "01554464169",
-//         type: "tel",
-//         tags: ["your phone", "phone number", "what's app", "cell phone", "الهاتف", "رقم الجوال", "رقم الهاتف", "واتساب",'رقم الواتس']
-//     },
-//     {
-//         field: "Email",
-//         title: "yousefmahmoud150@gmail.com",
-//         type: "email",
-//         tags: ["email", "your email", "contact email", "البريد الإلكتروني", "الايميل"]
-//     },
-//     {
-//         field: "LinkedIn",
-//         title: "https://www.linkedin.com/in/youssefmahmoud1/",
-//         type: "url",
-//         tags: ["linked in", "linkedIn", "linkedin", "لينكد إن", "لينكدين"]
-//     },
-//     {
-//         field: "Experience",
-//         title: "3+ years",
-//         type: "text",
-//         tags: ["experience", "current experience", "total experience", "الخبرة", "سنوات الخبرة", "خبراتك"]
-//     },
-//     {
-//         field: "Location",
-//         title: "Egypt",
-//         type: "text",
-//         tags: ["location", "city", "الموقع", "العنوان", "المدينة", "محل الإقامة",'country','البلد','الدولة']
-//     },
-//     {
-//         field: "Github",
-//         title: "https://github.com/yousefjoe1",
-//         type: "url",
-//         tags: ["github", "git hub", "جيت هاب"]
-//     },
-//     {
-//         field: "Portfolio",
-//         title: "https://yousefjoe1.github.io/Youssef_Portfolio/#/about",
-//         type: "url",
-//         tags: ["portfolio", "website", "web site", "projects", "معرض الأعمال", "الموقع الشخصي", "موقعك", "رابط أعمالك"]
-//     },
-//     {
-//         field: "CV",
-//         title: "https://drive.google.com/file/d/1NLYsFcKbiaEHWCF1ZyQcKnlrdOPJtPPt/view?usp=sharing",
-//         type: "url",
-//         tags: ["CV", "CV link","السيره الذاتيه"]
-//     }
-// ];
-
 
 // background.js
 const basicsInfo = [
@@ -160,7 +103,7 @@ const basicsInfo = [
     {
         id: "portfolio",
         field: "Portfolio",
-        title: "https://yousefjoe1.github.io/Youssef_Portfolio/#/about",
+        title: "https://portfolio-nextjs-iota-eight.vercel.app/",
         type: "url",
         tags: [
             { id: "portfolio", tagName: "portfolio" },
@@ -176,7 +119,7 @@ const basicsInfo = [
     {
         id: "cv",
         field: "CV",
-        title: "https://drive.google.com/file/d/1NLYsFcKbiaEHWCF1ZyQcKnlrdOPJtPPt/view?usp=sharing",
+        title: "https://drive.google.com/file/d/1WKurpL6_IZSkCV0bmGRFB9qzscRZ9jSE/view?usp=sharing",
         type: "url",
         tags: [
             { id: "cv", tagName: "cv" },
