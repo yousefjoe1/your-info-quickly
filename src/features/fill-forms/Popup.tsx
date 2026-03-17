@@ -66,6 +66,7 @@ const Popup: React.FC = () => {
         }
     };
 
+
     // const handleMagicFill = async (myQuickInfo: MyQuickInfo[]) => {
     //     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     //     if (!tab?.id) return;
