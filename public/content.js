@@ -1,358 +1,515 @@
 
+//  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//    if (request.action === "autoFillForm") {
+//      const data = request.data;
+    
+//      data.forEach(info => {
+//        const element = findBestMatchingInputBtn(info);
+      
+//        if (element) {
+//          fillInputElementByClickBtn(element, info.title);
+//          console.log(`✅ Filled "${info.field}" with "${info.title}"`);
+//        } else {
+//          console.warn(`❌ Could not find input for "${info.field}"`);
+//        }
+//      });
+    
+//      sendResponse({ status: "success" });
+//    }
+//    return true;
+//  });
+
+//  function isLatinBasedBtn(text) {
+//    const latinRegex = /^[a-z\s'"]+$/i;
+//    return latinRegex.test(text);
+//  }
+
+//  function getSearchTermsBtn(info) {
+//    return [info.field, ...(info.tags || [])]
+//      .map(t => {
+//        const tagName = typeof t === 'object' ? t.tagName : t;
+//        return tagName.toLowerCase();
+//      })
+//     .filter(t => isLatinBasedBtn(t));
+// }
+
+// function findBestMatchingInputBtn(info) {
+//   const searchTerms = getSearchTermsBtn(info);
+//   let element = null;
+  
+//   // Strategy 1: Direct attribute matching
+//   element = findByDirectAttributesBtn(searchTerms);
+//   if (element && verifyInputContextByClickBtn(element, searchTerms)) {
+//     console.log('🎯 Found via direct attributes');
+//     return element;
+//   }
+  
+//   // Strategy 2: Find input by verifying its context (labels/parent text)
+//   element = findByContextVerificationBtn(searchTerms);
+//   if (element) {
+//     console.log('🎯 Found via context verification');
+//     return element;
+//   }
+  
+//   return null;
+// }
+
+// function findByDirectAttributesBtn(searchTerms) {
+//   const standardSelector = searchTerms.map(term => 
+//     `input[name*="${term}" i], 
+//      input[id*="${term}" i], 
+//      input[placeholder*="${term}" i], 
+//      textarea[name*="${term}" i]`
+//   ).join(', ');
+  
+//   return document.querySelector(standardSelector);
+// }
+
+// function findByContextVerificationBtn(searchTerms) {
+//   // Get all inputs on the page
+//   const allInputs = document.querySelectorAll('input:not([type="hidden"]), textarea, [contenteditable="true"]');
+  
+//   for (let input of allInputs) {
+//     if (verifyInputContextByClickBtn(input, searchTerms)) {
+//       return input;
+//     }
+//   }
+    
+//   return null;
+// }
+
+// function verifyInputContextByClickBtn(input, searchTerms) {
+//   // Check up to 4 levels of parents
+//   let currentElement = input;
+//   const maxLevels = 4;
+  
+//   for (let level = 0; level < maxLevels; level++) {
+//     if (!currentElement || currentElement === document.body) break;
+    
+//     // Check all text-bearing elements within this parent
+//     const textElements = currentElement.querySelectorAll('label, span, div, p, th, b, legend, strong');
+    
+//     for (let textEl of textElements) {
+//       // Skip if this element contains the input itself (avoid checking descendants)
+//       if (textEl.contains(input) && textEl !== currentElement) continue;
+      
+//       const text = textEl.innerText?.trim().toLowerCase();
+      
+//       // Check if text matches any of our search terms using includes
+//       if (text && text.length > 0 && text.length < 50) {
+//         const matchedTerm = searchTerms.find(term => text.includes(term));
+//         if (matchedTerm) {
+//           console.log(`📍 Verified at level ${level}: "${text}" contains "${matchedTerm}"`);
+//           return true;
+//         }
+//       }
+//     }
+    
+//     // Also check the associated label via 'for' attribute
+//     if (input.id) {
+//       const label = document.querySelector(`label[for="${input.id}"]`);
+//       if (label) {
+//         const labelText = label.innerText?.trim().toLowerCase();
+//         const matchedTerm = searchTerms.find(term => labelText?.includes(term));
+//         if (matchedTerm) {
+//           console.log(`📍 Verified via label[for]: "${labelText}" contains "${matchedTerm}"`);
+//           return true;
+//         }
+//       }
+//     }
+    
+//     // Check aria-label and aria-labelledby
+//     if (input.hasAttribute('aria-label')) {
+//       const ariaLabel = input.getAttribute('aria-label').toLowerCase();
+//       const matchedTerm = searchTerms.find(term => ariaLabel.includes(term));
+//       if (matchedTerm) {
+//         console.log(`📍 Verified via aria-label: "${ariaLabel}" contains "${matchedTerm}"`);
+//         return true;
+//       }
+//     }
+    
+//     if (input.hasAttribute('aria-labelledby')) {
+//       const labelId = input.getAttribute('aria-labelledby');
+//       const labelElement = document.getElementById(labelId);
+//       if (labelElement) {
+//         const labelText = labelElement.innerText?.trim().toLowerCase();
+//         const matchedTerm = searchTerms.find(term => labelText?.includes(term));
+//         if (matchedTerm) {
+//           console.log(`📍 Verified via aria-labelledby: "${labelText}" contains "${matchedTerm}"`);
+//           return true;
+//         }
+//       }
+//     }
+    
+//     currentElement = currentElement.parentElement;
+//   }
+  
+//   return false;
+// }
+
+// function fillInputElementByClickBtn(element, value) {
+//   // Handle React/Vue controlled inputs
+//   const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+//     window.HTMLInputElement.prototype, 
+//     "value"
+//   ).set;
+  
+//   const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+//     window.HTMLTextAreaElement.prototype, 
+//     "value"
+//   ).set;
+  
+//   if (element.tagName === 'TEXTAREA') {
+//     nativeTextAreaValueSetter.call(element, value);
+//   } else if (element.hasAttribute('contenteditable')) {
+//     element.innerText = value;
+//   } else {
+//     nativeInputValueSetter.call(element, value);
+//   }
+  
+//   // Trigger events for framework reactivity
+//   element.dispatchEvent(new Event('input', { bubbles: true }));
+//   element.dispatchEvent(new Event('change', { bubbles: true }));
+//   element.dispatchEvent(new Event('blur', { bubbles: true }));
+  
+//   // Focus briefly to ensure visibility
+//   element.focus();
+// }
+
+
+
+/*========================================*/
+/*========================================*/
+/*========================================*/
+/*========================================*/
+
+
+// ============================================================
+//  Smart Form Autofill — content.js  (v3)
+//
+//  Key improvements over v2:
+//  • Scans ALL siblings (before AND after input) inside every
+//    ancestor — handles labels placed below inputs (JotForm, etc.)
+//  • Word-level token matching so "Your Expected Salary in EGP"
+//    matches a field tagged "Expected Salary" / "Salary"
+//  • Dedicated pass that finds the input's closest bounding
+//    container and reads every text node inside it
+//  • Verbose debug log so you can tune weights easily
+// ============================================================
+
+// ─── Message listener ────────────────────────────────────────
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "autoFillForm") {
-    const data = request.data;
-    
-    data.forEach(info => {
-      const element = findBestMatchingInputBtn(info);
-      
-      if (element) {
-        fillInputElementByClickBtn(element, info.title);
-        console.log(`✅ Filled "${info.field}" with "${info.title}"`);
-      } else {
-        console.warn(`❌ Could not find input for "${info.field}"`);
-      }
-    });
-    
-    sendResponse({ status: "success" });
+    const results = autoFillAll(request.data);
+    sendResponse({ status: "success", results });
   }
   return true;
 });
 
-function isLatinBasedBtn(text) {
-  const latinRegex = /^[a-z\s'"]+$/i;
-  return latinRegex.test(text);
-}
+// ─── Config ──────────────────────────────────────────────────
+const SCORE_THRESHOLD = 2;   // minimum score to accept a match
+const MAX_CONTEXT     = 15;  // max context entries per input
+const MAX_LEVELS      = 10;  // max parent levels to walk up
+const DEBUG           = true; // set false to silence logs
 
-function getSearchTermsBtn(info) {
-  return [info.field, ...(info.tags || [])]
-    .map(t => {
-      const tagName = typeof t === 'object' ? t.tagName : t;
-      return tagName.toLowerCase();
-    })
-    .filter(t => isLatinBasedBtn(t));
-}
+// ─── Entry point ─────────────────────────────────────────────
+function autoFillAll(data) {
+  const allInputs = getPageInputs();
+  const results   = [];
 
-function findBestMatchingInputBtn(info) {
-  const searchTerms = getSearchTermsBtn(info);
-  let element = null;
-  
-  // Strategy 1: Direct attribute matching
-  element = findByDirectAttributesBtn(searchTerms);
-  if (element && verifyInputContextByClickBtn(element, searchTerms)) {
-    console.log('🎯 Found via direct attributes');
-    return element;
+  // Build context once per input (expensive DOM walk done only once)
+  const inputContexts = allInputs.map(input => ({
+    input,
+    context: buildContextArray(input),
+  }));
+
+  if (DEBUG) {
+    console.group("🔍 Autofill context dump");
+    inputContexts.forEach(({ input, context }) => {
+      console.log(`INPUT [${input.name || input.id || input.placeholder || input.tagName}]`, context);
+    });
+    console.groupEnd();
   }
-  
-  // Strategy 2: Find input by verifying its context (labels/parent text)
-  element = findByContextVerificationBtn(searchTerms);
-  if (element) {
-    console.log('🎯 Found via context verification');
-    return element;
-  }
-  
-  return null;
-}
 
-function findByDirectAttributesBtn(searchTerms) {
-  const standardSelector = searchTerms.map(term => 
-    `input[name*="${term}" i], 
-     input[id*="${term}" i], 
-     input[placeholder*="${term}" i], 
-     textarea[name*="${term}" i]`
-  ).join(', ');
-  
-  return document.querySelector(standardSelector);
-}
+  for (const fieldInfo of data) {
+    const match = findBestMatch(inputContexts, fieldInfo);
 
-function findByContextVerificationBtn(searchTerms) {
-  // Get all inputs on the page
-  const allInputs = document.querySelectorAll('input:not([type="hidden"]), textarea, [contenteditable="true"]');
-  
-  for (let input of allInputs) {
-    if (verifyInputContextByClickBtn(input, searchTerms)) {
-      return input;
+    if (match && match.score >= SCORE_THRESHOLD) {
+      fillInput(match.input, fieldInfo.title);
+      console.log(`✅ "${fieldInfo.field}" → score ${match.score} | filled "${fieldInfo.title}"`);
+      results.push({ field: fieldInfo.field, filled: true, score: match.score });
+    } else {
+      console.warn(`❌ "${fieldInfo.field}" — no confident match (best score: ${match?.score ?? 0})`);
+      results.push({ field: fieldInfo.field, filled: false, score: match?.score ?? 0 });
     }
   }
-  
-  return null;
+
+  return results;
 }
 
-function verifyInputContextByClickBtn(input, searchTerms) {
-  // Check up to 4 levels of parents
-  let currentElement = input;
-  const maxLevels = 4;
-  
-  for (let level = 0; level < maxLevels; level++) {
-    if (!currentElement || currentElement === document.body) break;
-    
-    // Check all text-bearing elements within this parent
-    const textElements = currentElement.querySelectorAll('label, span, div, p, th, b, legend, strong');
-    
-    for (let textEl of textElements) {
-      // Skip if this element contains the input itself (avoid checking descendants)
-      if (textEl.contains(input) && textEl !== currentElement) continue;
-      
-      const text = textEl.innerText?.trim().toLowerCase();
-      
-      // Check if text matches any of our search terms using includes
-      if (text && text.length > 0 && text.length < 50) {
-        const matchedTerm = searchTerms.find(term => text.includes(term));
-        if (matchedTerm) {
-          console.log(`📍 Verified at level ${level}: "${text}" contains "${matchedTerm}"`);
-          return true;
-        }
+// ─── Collect all fillable inputs ─────────────────────────────
+function getPageInputs() {
+  const EXCLUDE_TYPES = new Set([
+    'hidden', 'submit', 'button', 'reset', 'image',
+    'file', 'checkbox', 'radio',
+  ]);
+
+  const inputs = [...document.querySelectorAll(
+    'input, textarea, [contenteditable="true"]'
+  )];
+
+  return inputs.filter(el => {
+    if (el.tagName === 'INPUT' && EXCLUDE_TYPES.has(el.type?.toLowerCase())) return false;
+    return true;
+  });
+}
+
+
+function buildContextArray(input) {
+  const entries = [];    // { text, source, weight }
+  const seen    = new Set(); // deduplicate text
+
+  const push = (rawText, source, weight) => {
+    const text = normalizeText(rawText);
+    if (!text || text.length < 1 || text.length > 120) return;
+    if (seen.has(text)) return;
+    if (entries.length >= MAX_CONTEXT) return;
+    seen.add(text);
+    entries.push({ text, source, weight });
+  };
+
+  // ── 1. aria-labelledby (highest confidence) ──────────────
+  const labelledById = input.getAttribute('aria-labelledby');
+  if (labelledById) {
+    for (const id of labelledById.split(/\s+/)) {
+      const el = document.getElementById(id);
+      if (el) push(el.innerText, 'aria-labelledby', 5);
+    }
+  }
+
+  // ── 2. label[for="id"] ───────────────────────────────────
+  if (input.id) {
+    const label = document.querySelector(`label[for="${CSS.escape(input.id)}"]`);
+    if (label) push(label.innerText, 'label[for]', 5);
+  }
+
+  // ── 3. aria-label attribute ──────────────────────────────
+  const ariaLabel = input.getAttribute('aria-label');
+  if (ariaLabel) push(ariaLabel, 'aria-label', 4);
+
+  // ── 4. Input's own attributes ────────────────────────────
+  const attrMap = [
+    ['placeholder', 3],
+    ['name',        3],
+    ['id',          3],
+    ['autocomplete',3],
+    ['title',       2],
+  ];
+  for (const [attr, weight] of attrMap) {
+    const val = input.getAttribute(attr);
+    if (val) push(val, `attr:${attr}`, weight);
+  }
+
+  // ── 5. Closest bounding container scan ───────────────────
+  //  Walk up until we find a container that "owns" just this
+  //  input (small enough to be a field wrapper, not the whole form).
+  //  Then grab ALL text elements inside it — before AND after the
+  //  input. This is what catches labels placed below inputs (JotForm).
+  const container = findFieldContainer(input);
+  if (container) {
+    const TEXT_TAGS = [
+      'label', 'span', 'p', 'div', 'legend',
+      'th', 'caption', 'h1','h2','h3','h4','h5','h6',
+      'b', 'strong', 'em', 'small',
+    ];
+    for (const tag of TEXT_TAGS) {
+      for (const el of container.querySelectorAll(tag)) {
+        // Skip elements that contain the input (they're wrappers, not labels)
+        if (el.contains(input)) continue;
+        // Skip elements with child inputs (likely another field's wrapper)
+        const childInputCount = el.querySelectorAll('input,textarea,select').length;
+        if (childInputCount > 0) continue;
+
+        const t = el.innerText?.trim();
+        if (t) push(t, `container:${tag}`, 2);
       }
     }
-    
-    // Also check the associated label via 'for' attribute
-    if (input.id) {
-      const label = document.querySelector(`label[for="${input.id}"]`);
-      if (label) {
-        const labelText = label.innerText?.trim().toLowerCase();
-        const matchedTerm = searchTerms.find(term => labelText?.includes(term));
-        if (matchedTerm) {
-          console.log(`📍 Verified via label[for]: "${labelText}" contains "${matchedTerm}"`);
-          return true;
-        }
+
+    // Also grab raw text nodes directly inside the container
+    for (const node of container.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        push(node.textContent, 'container:text', 1);
       }
     }
-    
-    // Check aria-label and aria-labelledby
-    if (input.hasAttribute('aria-label')) {
-      const ariaLabel = input.getAttribute('aria-label').toLowerCase();
-      const matchedTerm = searchTerms.find(term => ariaLabel.includes(term));
-      if (matchedTerm) {
-        console.log(`📍 Verified via aria-label: "${ariaLabel}" contains "${matchedTerm}"`);
-        return true;
-      }
-    }
-    
-    if (input.hasAttribute('aria-labelledby')) {
-      const labelId = input.getAttribute('aria-labelledby');
-      const labelElement = document.getElementById(labelId);
-      if (labelElement) {
-        const labelText = labelElement.innerText?.trim().toLowerCase();
-        const matchedTerm = searchTerms.find(term => labelText?.includes(term));
-        if (matchedTerm) {
-          console.log(`📍 Verified via aria-labelledby: "${labelText}" contains "${matchedTerm}"`);
-          return true;
-        }
-      }
-    }
-    
-    currentElement = currentElement.parentElement;
   }
-  
-  return false;
+
+  // ── 6. Walk up ancestors — direct text of each parent ────
+  let el     = input.parentElement;
+  let levels = 0;
+  while (el && el !== document.body && levels < MAX_LEVELS) {
+    const directText = getDirectText(el);
+    if (directText) push(directText, `ancestor@${levels}`, 1);
+    el = el.parentElement;
+    levels++;
+  }
+
+  return entries;
 }
 
-function fillInputElementByClickBtn(element, value) {
-  // Handle React/Vue controlled inputs
-  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-    window.HTMLInputElement.prototype, 
-    "value"
-  ).set;
-  
-  const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
-    window.HTMLTextAreaElement.prototype, 
-    "value"
-  ).set;
-  
-  if (element.tagName === 'TEXTAREA') {
-    nativeTextAreaValueSetter.call(element, value);
-  } else if (element.hasAttribute('contenteditable')) {
-    element.innerText = value;
-  } else {
-    nativeInputValueSetter.call(element, value);
+
+function findFieldContainer(input) {
+  let el = input.parentElement;
+  for (let i = 0; i < MAX_LEVELS; i++) {
+    if (!el || el === document.body) break;
+    const inputsInside = el.querySelectorAll(
+      'input:not([type="hidden"]), textarea, [contenteditable]'
+    ).length;
+    // Stop at the tightest container holding only our input
+    if (inputsInside <= 1) return el;
+    el = el.parentElement;
   }
-  
-  // Trigger events for framework reactivity
-  element.dispatchEvent(new Event('input', { bubbles: true }));
-  element.dispatchEvent(new Event('change', { bubbles: true }));
-  element.dispatchEvent(new Event('blur', { bubbles: true }));
-  
-  // Focus briefly to ensure visibility
+  // Fallback: use immediate parent
+  return input.parentElement;
+}
+
+// ─── Get only the direct text nodes of an element ────────────
+function getDirectText(el) {
+  return [...el.childNodes]
+    .filter(n => n.nodeType === Node.TEXT_NODE)
+    .map(n => n.textContent.trim())
+    .filter(t => t.length > 0 && t.length < 100)
+    .join(' ')
+    .trim() || null;
+}
+
+// ─── Normalize text for matching ─────────────────────────────
+function normalizeText(text) {
+  return text
+    .toLowerCase()
+    .replace(/[*:\-–—_/\\|]/g, ' ')  // punctuation → space
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ─── Tokenize text into meaningful words ─────────────────────
+function tokenize(text) {
+  // Remove stop words that add noise to token matching
+  const STOP = new Set([
+    'a','an','the','your','our','my','their','its',
+    'in','on','at','to','for','of','with','by','from',
+    'is','are','was','were','be','been','being',
+    'and','or','but','not','no','yes','please','enter',
+    'required','optional','eg','ie','etc',
+  ]);
+  return text
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !STOP.has(w));
+}
+
+// ─── Build search terms from field definition ─────────────────
+function buildSearchTerms(fieldInfo) {
+  const raw = [fieldInfo.field, ...(fieldInfo.tags || [])];
+  const terms = [];
+
+  for (const item of raw) {
+    const str = normalizeText(typeof item === 'object' ? item.tagName : item);
+    if (!str) continue;
+    terms.push({ phrase: str, tokens: tokenize(str) });
+  }
+
+  return terms;
+}
+
+// ─── Find best matching input for a field ────────────────────
+function findBestMatch(inputContexts, fieldInfo) {
+  const searchTerms = buildSearchTerms(fieldInfo);
+  let best = null;
+
+  for (const { input, context } of inputContexts) {
+    const score = scoreContext(context, searchTerms);
+    if (!best || score > best.score) {
+      best = { input, score };
+    }
+  }
+
+  if (DEBUG && best) {
+    console.log(`🎯 "${fieldInfo.field}" best score: ${best.score}`);
+  }
+
+  return best;
+}
+
+
+function scoreContext(context, searchTerms) {
+  let total = 0;
+
+  for (const { text, weight } of context) {
+    const textTokens = new Set(tokenize(text));
+
+    for (const { phrase, tokens } of searchTerms) {
+      // A. Exact full phrase match
+      if (text === phrase) {
+        total += 4 * weight;
+        continue;
+      }
+
+      // B. Context text contains the full phrase
+      //    "your expected salary in egp" ⊇ "expected salary"
+      if (text.includes(phrase)) {
+        total += 3 * weight;
+        continue;
+      }
+
+      // C. Phrase contains the context text
+      //    label text "salary" ⊂ search phrase "expected salary"
+      if (phrase.includes(text) && text.length > 2) {
+        total += 2 * weight;
+        continue;
+      }
+
+      // D. Token-level matching
+      //    Count how many search tokens appear as words in context text
+      const matchedTokens = tokens.filter(t => textTokens.has(t));
+      if (matchedTokens.length > 0) {
+        const allMatch  = matchedTokens.length === tokens.length;
+        const tokenScore = allMatch
+          ? 2 * weight * matchedTokens.length   // all tokens matched — high confidence
+          : 1 * weight * matchedTokens.length;  // partial token match
+        total += tokenScore;
+      }
+    }
+  }
+
+  return total;
+}
+
+function fillInput(element, value) {
   element.focus();
+
+  if (element.hasAttribute('contenteditable')) {
+    // ContentEditable (Draft.js, Quill, Slate, etc.)
+    element.innerText = value;
+    element.dispatchEvent(new InputEvent('input', { bubbles: true, data: value }));
+
+  } else if (element.tagName === 'TEXTAREA') {
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLTextAreaElement.prototype, 'value'
+    ).set;
+    setter.call(element, value);
+
+  } else {
+    // Standard <input>
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype, 'value'
+    ).set;
+    setter.call(element, value);
+  }
+
+  // Fire all events so React/Vue/Angular pick up the change
+  element.dispatchEvent(new Event('input',  { bubbles: true }));
+  element.dispatchEvent(new Event('change', { bubbles: true }));
+  element.dispatchEvent(new Event('blur',   { bubbles: true }));
 }
-
-
-// ==========================================================================================================
-// ==========================================================================================================
-// ==========================================================================================================
-// ==========================================================================================================
-// ==========================================================================================================
-// ==========================================================================================================
-
-
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
-// =====================================================================================
-
-// ============================================
-// AUTOFILL CONTENT SCRIPT — Complete
-// ============================================
-
-// ─── SHARED STATE (declared once at top) ────
-
-
-
-
-
-/*========================================*/
-/*========================================*/
-/*========================================*/
-/*========================================*/
-// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-// if (request.action === 'autoFillForm') {
-//   const data = request.data;
-
-//   // Use profileData from storage if available, fallback to request data
-//   const profile = profileData.length > 0 ? profileData : data;
-
-//   const results = smartFill(profile);
-
-//   sendResponse({
-//     status: 'success',
-//     filled: results.filled,
-//     unmatched: results.unmatched
-//   });
-// }
-//   return true;
-// });
-
-
-
-// function smartFill(profileData) {
-//   const results = { filled: [], unmatched: [] };
-//   const SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]):not([type="button"]), textarea';
-  
-//   const allInputs = document.querySelectorAll(SELECTOR);
-
-//   allInputs.forEach(input => {
-//     // Already filled — skip
-//     if (input.value && input.value.trim() !== '') return;
-
-//     const detectedText = detectNearestText(input);
-//     if (!detectedText) {
-//       results.unmatched.push(input.name || input.id || 'unknown');
-//       return;
-//     }
-
-//     const bestMatch = findBestMatchForLabelText(detectedText, profileData);
-//     if (!bestMatch) {
-//       results.unmatched.push(detectedText);
-//       return;
-//     }
-
-//     fillInputElement(input, bestMatch.title);
-//     results.filled.push(bestMatch.field);
-//   });
-
-//   return results;
-// }
-
-// function detectNearestText(input) {
-//   // Priority 1: label[for]
-//   if (input.id) {
-//     const label = document.querySelector(`label[for="${input.id}"]`);
-//     if (label) return label.innerText?.trim().toLowerCase();
-//   }
-
-//   // Priority 2: aria-label
-//   const ariaLabel = input.getAttribute('aria-label');
-//   if (ariaLabel) return ariaLabel.trim().toLowerCase();
-
-//   // Priority 3: aria-labelledby
-//   const labelledBy = input.getAttribute('aria-labelledby');
-//   if (labelledBy) {
-//     const ref = document.getElementById(labelledBy);
-//     if (ref) return ref.innerText?.trim().toLowerCase();
-//   }
-
-//   // Priority 4: placeholder
-//   if (input.placeholder) return input.placeholder.trim().toLowerCase();
-
-//   // Priority 5: scan surrounding DOM
-//   // Check previous siblings first (label/span usually comes BEFORE the input)
-//   const nearbyText = scanNearbyElements(input);
-//   if (nearbyText) return nearbyText;
-
-//   return null;
-// }
-
-// function scanNearbyElements(input) {
-//   const TEXT_TAGS = ['label', 'span', 'p', 'div', 'legend', 'b', 'strong', 'h1', 'h2', 'h3', 'h4', 'h5', 'li'];
-  
-//   // Walk up to 5 parent levels
-//   let current = input.parentElement;
-//   for (let level = 0; level < 5; level++) {
-//     if (!current || current === document.body) break;
-
-//     // Check all previous siblings of current element at this level
-//     // (because label/span usually comes BEFORE input in DOM)
-//     let sibling = current.previousElementSibling;
-//     while (sibling) {
-//       const text = extractText(sibling, input);
-//       if (text) return text;
-//       sibling = sibling.previousElementSibling;
-//     }
-
-//     // Also check text-bearing children of the parent
-//     // but skip anything that contains or IS the input
-//     const children = current.querySelectorAll(TEXT_TAGS.join(', '));
-//     for (const child of children) {
-//       if (child.contains(input) || input.contains(child)) continue;
-//       const text = extractText(child, input);
-//       if (text) return text;
-//     }
-
-//     current = current.parentElement;
-//   }
-
-//   return null;
-// }
-
-// function extractText(el, inputToExclude) {
-//   // Skip if element contains the input (we want label text, not field container text)
-//   if (el.contains(inputToExclude)) return null;
-
-//   const text = el.innerText?.trim().toLowerCase();
-  
-//   // Must be meaningful but not too long (avoid grabbing whole sections)
-//   if (text && text.length > 0 && text.length < 80) return text;
-  
-//   return null;
-// }
-
-// function findBestMatchForLabelText(labelText, profileData) {
-//   let bestMatch = null;
-//   let bestScore = 0;
-
-//   for (const info of profileData) {
-//     const terms = [info.field, ...(info.tags || [])]
-//       .map(t => (typeof t === 'object' ? t.tagName : t).toLowerCase())
-//       .filter(t => isLatinBased(t));
-
-//     for (const term of terms) {
-//       if (labelText.includes(term) || term.includes(labelText)) {
-//         // Longer match = more specific = better
-//         const score = term.length;
-//         if (score > bestScore) {
-//           bestScore = score;
-//           bestMatch = info;
-//         }
-//       }
-//     }
-//   }
-
-//   return bestMatch;
-// }
-
-
-
-
 
 
 /*========================================*/
@@ -373,6 +530,9 @@ let mappingOverlay = null;
 let mappingTarget = null;
 let highlightBox = null;
 let mappingMoveTimer = null;
+
+let activeTriggerIcon = null; // للاحتفاظ بالأيقونة الحالية المفعلة
+let isInsideTriggerClick = false; // لمنع تضارب أحداث الـ blur والـ click
 
 // ─── STYLES ─────────────────────────────────
 const STYLES = `
@@ -423,6 +583,31 @@ const STYLES = `
   #__af_mapping_overlay__ .__af_mo_skip__:hover { background: #2a2a3a; }
   #__af_mapping_overlay__ .__af_mo_badge__ { display: inline-block; font-size: 9px; font-weight: 700; color: #f97316; background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); border-radius: 4px; padding: 1px 5px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
   #__af_mapping_overlay__ .__af_mo_esc__ { font-size: 10px; color: #4a4a6a; text-align: center; margin-top: 10px; }
+  /* QuickFill Floating Trigger Icon */
+  .__af_trigger_icon__ {
+    position: absolute;
+    z-index: 2147483646;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    background: #7c3aed;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: transform 0.1s, opacity 0.1s;
+    opacity: 0.7;
+  }
+  .__af_trigger_icon__:hover {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  .__af_trigger_icon__::after {
+    content: "⚡"; /* أيقونة البرق المعبرة عن الـ Quick Fill */
+    font-size: 11px;
+    color: white;
+  }
 `;
 
 // ─── INIT ────────────────────────────────────
@@ -464,6 +649,51 @@ function injectStyles() {
   style.id = '__af_styles__';
   style.textContent = STYLES;
   document.head.appendChild(style);
+}
+
+function showTriggerIcon(input) {
+  removeTriggerIcon();
+  if (mappingMode) return;
+
+  activeInput = input;
+  
+  // إنشاء الأيقونة
+  const icon = document.createElement('div');
+  icon.className = '__af_trigger_icon__';
+  
+  document.body.appendChild(icon);
+  activeTriggerIcon = icon;
+  
+  positionTriggerIcon(input);
+
+  // عند الضغط على الأيقونة تفتح القائمة فوراً
+  icon.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isInsideTriggerClick = true;
+    showDropdown(input);
+    removeTriggerIcon(); // نخفي الأيقونة بما أن القائمة فتحت
+    setTimeout(() => { isInsideTriggerClick = false; }, 100);
+  });
+}
+
+function positionTriggerIcon(input) {
+  if (!activeTriggerIcon) return;
+  const rect = input.getBoundingClientRect();
+  
+  // وضع الأيقونة في أقصى اليمين داخل الـ Input مع ترك مسافة 5 بكسل هامش
+  const top = rect.top + window.scrollY + (rect.height - 20) / 2;
+  const left = rect.left + window.scrollX + rect.width - 25;
+
+  activeTriggerIcon.style.top = `${top}px`;
+  activeTriggerIcon.style.left = `${left}px`;
+}
+
+function removeTriggerIcon() {
+  if (activeTriggerIcon) {
+    activeTriggerIcon.remove();
+    activeTriggerIcon = null;
+  }
 }
 
 // ─── MESSAGE LISTENER ────────────────────────
@@ -850,34 +1080,91 @@ function fillInputElement(element, value) {
 // LISTENERS
 // ============================================
 
+// function attachListeners() {
+//   const SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]), textarea';
+
+//   document.addEventListener('focusin', (e) => {
+//     if (!dropdownEnabled) return;
+//     if (mappingMode) return; // don't show dropdown during mapping
+//     if (!chrome?.runtime?.id) return;
+//     const input = e.target.closest(SELECTOR);
+//     if (!input) return;
+
+//     if (profileData.length > 0) {
+//       showDropdown(input);
+//     } else {
+//       chrome.storage.local.get('info', (result) => {
+//         profileData = result.info || [];
+//         if (profileData.length > 0) showDropdown(input);
+//       });
+//     }
+//   });
+
+//   document.addEventListener('mousedown', (e) => {
+//     if (dropdown && !dropdown.contains(e.target) && e.target !== activeInput) {
+//       removeDropdown();
+//     }
+//   });
+
+//   window.addEventListener('resize', () => { if (activeInput) positionDropdown(activeInput); });
+//   window.addEventListener('scroll', () => { if (activeInput) positionDropdown(activeInput); }, { passive: true });
+// }
+
 function attachListeners() {
   const SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]), textarea';
 
+  // 1. عند الدخول على الـ Input نظهر الأيقونة فقط ولا نظهر الـ Dropdown
   document.addEventListener('focusin', (e) => {
     if (!dropdownEnabled) return;
-    if (mappingMode) return; // don't show dropdown during mapping
+    if (mappingMode) return;
     if (!chrome?.runtime?.id) return;
     const input = e.target.closest(SELECTOR);
     if (!input) return;
 
+    // بنجيب البيانات وبنظهر الأيقونة الصغيرة العائمة بس
     if (profileData.length > 0) {
-      showDropdown(input);
+      showTriggerIcon(input);
     } else {
       chrome.storage.local.get('info', (result) => {
         profileData = result.info || [];
-        if (profileData.length > 0) showDropdown(input);
+        if (profileData.length > 0) showTriggerIcon(input);
       });
     }
   });
 
+  // 2. عند الخروج من الـ Input نغلق الأيقونة
+  document.addEventListener('focusout', (e) => {
+    setTimeout(() => {
+      if (!isInsideTriggerClick && dropdown === null) {
+        removeTriggerIcon();
+      }
+    }, 150); // تأخير بسيط للسماح بلقط الكليكات
+  });
+
+  // 3. إغلاق القائمة أو الأيقونة لو ضغطنا في أي مكان خارجي
   document.addEventListener('mousedown', (e) => {
     if (dropdown && !dropdown.contains(e.target) && e.target !== activeInput) {
       removeDropdown();
     }
+    if (activeTriggerIcon && e.target !== activeTriggerIcon && e.target !== activeInput) {
+      removeTriggerIcon();
+    }
   });
 
-  window.addEventListener('resize', () => { if (activeInput) positionDropdown(activeInput); });
-  window.addEventListener('scroll', () => { if (activeInput) positionDropdown(activeInput); }, { passive: true });
+  // 4. الحفاظ على توازن مكان الأيقونة والـ Dropdown أثناء السكرول أو الريسايز
+  window.addEventListener('resize', () => { 
+    if (activeInput) {
+      if (dropdown) positionDropdown(activeInput);
+      if (activeTriggerIcon) positionTriggerIcon(activeInput);
+    }
+  });
+
+  window.addEventListener('scroll', () => { 
+    if (activeInput) {
+      if (dropdown) positionDropdown(activeInput);
+      if (activeTriggerIcon) positionTriggerIcon(activeInput);
+    }
+  }, { passive: true });
 }
 
 // ─── START ───────────────────────────────────

@@ -47,24 +47,24 @@ const Popup: React.FC = () => {
         }
     }
 
-    // const handleMagicFill = async (myQuickInfo: MyQuickInfo[]) => {
-    //     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const handleMagicFill = async (myQuickInfo: MyQuickInfo[]) => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    //     if (tab?.id) {
-    //         chrome.tabs.sendMessage(tab.id, {
-    //             action: "autoFillForm",
-    //             data: myQuickInfo
-    //         }, (response) => {
-    //             console.log("🚀 ~ handleMagicFill ~ response:", response)
-    //             if (response?.status === "success") {
+        if (tab?.id) {
+            chrome.tabs.sendMessage(tab.id, {
+                action: "autoFillForm",
+                data: myQuickInfo
+            }, (response) => {
+                console.log("🚀 ~ handleMagicFill ~ response:", response)
+                if (response?.status === "success") {
 
-    //                 showToast('Data filled successfully', 'success');
-    //             } else {
-    //                 showToast('Failed to fill data', 'error');
-    //             }
-    //         });
-    //     }
-    // };
+                    showToast('Data filled successfully', 'success');
+                } else {
+                    showToast('Failed to fill data', 'error');
+                }
+            });
+        }
+    };
 
 
     // const handleMagicFill = async (myQuickInfo: MyQuickInfo[]) => {
@@ -116,13 +116,13 @@ const Popup: React.FC = () => {
 
 
             <AddInfoForm myQuickInfo={myQuickInfo} setMyQuickInfo={setMyQuickInfo} />
-            {/* <button
+            <button
                 type="button"
                 onClick={() => handleMagicFill(myQuickInfo)}
                 className="bg-purple-600 my-5 w-full justify-center hover:bg-purple-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-lg"
             >
                 ✨ Magic Auto-fill
-            </button> */}
+            </button>
 
             <div className={`${viewMode === 'popup' ? 'max-h-[300px]' : 'grid grid-cols-2 gap-2'} overflow-y-auto p-2 pb-4`}>
 
