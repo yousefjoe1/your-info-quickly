@@ -613,7 +613,7 @@ const STYLES = `
 // ─── INIT ────────────────────────────────────
 function init() {
   injectStyles();
-
+ attachListeners();
   try {
     if (!chrome?.runtime?.id) {
       attachListeners();
@@ -849,7 +849,7 @@ function showDropdown(input) {
     `;
     item.addEventListener('mousedown', (e) => {
       e.preventDefault();
-      fillInputElementByClickBtn(input, info.title);
+      fillInputElement(input, info.title);
       removeDropdown();
     });
     dropdown.appendChild(item);
@@ -1114,23 +1114,40 @@ function attachListeners() {
   const SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]), textarea';
 
   // 1. عند الدخول على الـ Input نظهر الأيقونة فقط ولا نظهر الـ Dropdown
-  document.addEventListener('focusin', (e) => {
-    if (!dropdownEnabled) return;
-    if (mappingMode) return;
-    if (!chrome?.runtime?.id) return;
-    const input = e.target.closest(SELECTOR);
-    if (!input) return;
+  // document.addEventListener('focusin', (e) => {
+  //   if (!dropdownEnabled) return;
+  //   if (mappingMode) return;
+  //   if (!chrome?.runtime?.id) return;
+  //   const input = e.target.closest(SELECTOR);
+  //   if (!input) return;
 
-    // بنجيب البيانات وبنظهر الأيقونة الصغيرة العائمة بس
-    if (profileData.length > 0) {
-      showTriggerIcon(input);
-    } else {
-      chrome.storage.local.get('info', (result) => {
-        profileData = result.info || [];
-        if (profileData.length > 0) showTriggerIcon(input);
-      });
-    }
-  });
+  //   // بنجيب البيانات وبنظهر الأيقونة الصغيرة العائمة بس
+  //   if (profileData.length > 0) {
+  //     showTriggerIcon(input);
+  //   } else {
+  //     chrome.storage.local.get('info', (result) => {
+  //       profileData = result.info || [];
+  //       if (profileData.length > 0) showTriggerIcon(input);
+  //     });
+  //   }
+  // });
+  document.addEventListener('focusin', (e) => {
+  if (!dropdownEnabled) return;
+  if (mappingMode) return;
+  if (!chrome?.runtime?.id) return;
+  const input = e.target.closest(SELECTOR);
+  if (!input) return;
+
+  if (profileData.length > 0) {
+    showTriggerIcon(input);
+  } else {
+    // Data not loaded yet — fetch it now, then show icon
+    chrome.storage.local.get('info', (result) => {
+      profileData = result.info || [];
+      if (profileData.length > 0) showTriggerIcon(input);
+    });
+  }
+});
 
   // 2. عند الخروج من الـ Input نغلق الأيقونة
   document.addEventListener('focusout', (e) => {
