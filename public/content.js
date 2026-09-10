@@ -1,210 +1,6 @@
-
-//  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-//    if (request.action === "autoFillForm") {
-//      const data = request.data;
-    
-//      data.forEach(info => {
-//        const element = findBestMatchingInputBtn(info);
-      
-//        if (element) {
-//          fillInputElementByClickBtn(element, info.title);
-//          console.log(`✅ Filled "${info.field}" with "${info.title}"`);
-//        } else {
-//          console.warn(`❌ Could not find input for "${info.field}"`);
-//        }
-//      });
-    
-//      sendResponse({ status: "success" });
-//    }
-//    return true;
-//  });
-
-//  function isLatinBasedBtn(text) {
-//    const latinRegex = /^[a-z\s'"]+$/i;
-//    return latinRegex.test(text);
-//  }
-
-//  function getSearchTermsBtn(info) {
-//    return [info.field, ...(info.tags || [])]
-//      .map(t => {
-//        const tagName = typeof t === 'object' ? t.tagName : t;
-//        return tagName.toLowerCase();
-//      })
-//     .filter(t => isLatinBasedBtn(t));
-// }
-
-// function findBestMatchingInputBtn(info) {
-//   const searchTerms = getSearchTermsBtn(info);
-//   let element = null;
-  
-//   // Strategy 1: Direct attribute matching
-//   element = findByDirectAttributesBtn(searchTerms);
-//   if (element && verifyInputContextByClickBtn(element, searchTerms)) {
-//     console.log('🎯 Found via direct attributes');
-//     return element;
-//   }
-  
-//   // Strategy 2: Find input by verifying its context (labels/parent text)
-//   element = findByContextVerificationBtn(searchTerms);
-//   if (element) {
-//     console.log('🎯 Found via context verification');
-//     return element;
-//   }
-  
-//   return null;
-// }
-
-// function findByDirectAttributesBtn(searchTerms) {
-//   const standardSelector = searchTerms.map(term => 
-//     `input[name*="${term}" i], 
-//      input[id*="${term}" i], 
-//      input[placeholder*="${term}" i], 
-//      textarea[name*="${term}" i]`
-//   ).join(', ');
-  
-//   return document.querySelector(standardSelector);
-// }
-
-// function findByContextVerificationBtn(searchTerms) {
-//   // Get all inputs on the page
-//   const allInputs = document.querySelectorAll('input:not([type="hidden"]), textarea, [contenteditable="true"]');
-  
-//   for (let input of allInputs) {
-//     if (verifyInputContextByClickBtn(input, searchTerms)) {
-//       return input;
-//     }
-//   }
-    
-//   return null;
-// }
-
-// function verifyInputContextByClickBtn(input, searchTerms) {
-//   // Check up to 4 levels of parents
-//   let currentElement = input;
-//   const maxLevels = 4;
-  
-//   for (let level = 0; level < maxLevels; level++) {
-//     if (!currentElement || currentElement === document.body) break;
-    
-//     // Check all text-bearing elements within this parent
-//     const textElements = currentElement.querySelectorAll('label, span, div, p, th, b, legend, strong');
-    
-//     for (let textEl of textElements) {
-//       // Skip if this element contains the input itself (avoid checking descendants)
-//       if (textEl.contains(input) && textEl !== currentElement) continue;
-      
-//       const text = textEl.innerText?.trim().toLowerCase();
-      
-//       // Check if text matches any of our search terms using includes
-//       if (text && text.length > 0 && text.length < 50) {
-//         const matchedTerm = searchTerms.find(term => text.includes(term));
-//         if (matchedTerm) {
-//           console.log(`📍 Verified at level ${level}: "${text}" contains "${matchedTerm}"`);
-//           return true;
-//         }
-//       }
-//     }
-    
-//     // Also check the associated label via 'for' attribute
-//     if (input.id) {
-//       const label = document.querySelector(`label[for="${input.id}"]`);
-//       if (label) {
-//         const labelText = label.innerText?.trim().toLowerCase();
-//         const matchedTerm = searchTerms.find(term => labelText?.includes(term));
-//         if (matchedTerm) {
-//           console.log(`📍 Verified via label[for]: "${labelText}" contains "${matchedTerm}"`);
-//           return true;
-//         }
-//       }
-//     }
-    
-//     // Check aria-label and aria-labelledby
-//     if (input.hasAttribute('aria-label')) {
-//       const ariaLabel = input.getAttribute('aria-label').toLowerCase();
-//       const matchedTerm = searchTerms.find(term => ariaLabel.includes(term));
-//       if (matchedTerm) {
-//         console.log(`📍 Verified via aria-label: "${ariaLabel}" contains "${matchedTerm}"`);
-//         return true;
-//       }
-//     }
-    
-//     if (input.hasAttribute('aria-labelledby')) {
-//       const labelId = input.getAttribute('aria-labelledby');
-//       const labelElement = document.getElementById(labelId);
-//       if (labelElement) {
-//         const labelText = labelElement.innerText?.trim().toLowerCase();
-//         const matchedTerm = searchTerms.find(term => labelText?.includes(term));
-//         if (matchedTerm) {
-//           console.log(`📍 Verified via aria-labelledby: "${labelText}" contains "${matchedTerm}"`);
-//           return true;
-//         }
-//       }
-//     }
-    
-//     currentElement = currentElement.parentElement;
-//   }
-  
-//   return false;
-// }
-
-// function fillInputElementByClickBtn(element, value) {
-//   // Handle React/Vue controlled inputs
-//   const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-//     window.HTMLInputElement.prototype, 
-//     "value"
-//   ).set;
-  
-//   const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
-//     window.HTMLTextAreaElement.prototype, 
-//     "value"
-//   ).set;
-  
-//   if (element.tagName === 'TEXTAREA') {
-//     nativeTextAreaValueSetter.call(element, value);
-//   } else if (element.hasAttribute('contenteditable')) {
-//     element.innerText = value;
-//   } else {
-//     nativeInputValueSetter.call(element, value);
-//   }
-  
-//   // Trigger events for framework reactivity
-//   element.dispatchEvent(new Event('input', { bubbles: true }));
-//   element.dispatchEvent(new Event('change', { bubbles: true }));
-//   element.dispatchEvent(new Event('blur', { bubbles: true }));
-  
-//   // Focus briefly to ensure visibility
-//   element.focus();
-// }
-
-
-
-/*========================================*/
-/*========================================*/
-/*========================================*/
-/*========================================*/
-
-
 // ============================================================
 //  Smart Form Autofill — content.js  (v3)
-//
-//  Key improvements over v2:
-//  • Scans ALL siblings (before AND after input) inside every
-//    ancestor — handles labels placed below inputs (JotForm, etc.)
-//  • Word-level token matching so "Your Expected Salary in EGP"
-//    matches a field tagged "Expected Salary" / "Salary"
-//  • Dedicated pass that finds the input's closest bounding
-//    container and reads every text node inside it
-//  • Verbose debug log so you can tune weights easily
 // ============================================================
-
-// ─── Message listener ────────────────────────────────────────
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "autoFillForm") {
-    const results = autoFillAll(request.data);
-    sendResponse({ status: "success", results });
-  }
-  return true;
-});
 
 // ─── Config ──────────────────────────────────────────────────
 const SCORE_THRESHOLD = 2;   // minimum score to accept a match
@@ -511,14 +307,6 @@ function fillInput(element, value) {
   element.dispatchEvent(new Event('blur',   { bubbles: true }));
 }
 
-
-/*========================================*/
-/*========================================*/
-/*========================================*/
-/*========================================*/
-
-
-
 let profileData = [];
 let dropdown = null;
 let activeInput = null;
@@ -533,6 +321,13 @@ let mappingMoveTimer = null;
 
 let activeTriggerIcon = null; // للاحتفاظ بالأيقونة الحالية المفعلة
 let isInsideTriggerClick = false; // لمنع تضارب أحداث الـ blur والـ click
+let listenersAttached = false;
+
+const FILLABLE_SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]):not([type="button"]), textarea';
+
+function isFillableInput(el) {
+  return el instanceof Element && el.matches(FILLABLE_SELECTOR);
+}
 
 // ─── STYLES ─────────────────────────────────
 const STYLES = `
@@ -613,7 +408,6 @@ const STYLES = `
 // ─── INIT ────────────────────────────────────
 function init() {
   injectStyles();
- attachListeners();
   try {
     if (!chrome?.runtime?.id) {
       attachListeners();
@@ -636,7 +430,10 @@ function init() {
         if (changes.info) profileData = changes.info.newValue || [];
         if (changes.dropdownEnabled !== undefined) {
           dropdownEnabled = changes.dropdownEnabled.newValue;
-          if (!dropdownEnabled) removeDropdown();
+          if (!dropdownEnabled) {
+            removeDropdown();
+            removeTriggerIcon();
+          }
         }
       });
     }
@@ -652,27 +449,41 @@ function injectStyles() {
 }
 
 function showTriggerIcon(input) {
-  removeTriggerIcon();
   if (mappingMode) return;
+  if (!isFillableInput(input)) return;
+  if (activeTriggerIcon && activeInput === input) {
+    positionTriggerIcon(input);
+    return;
+  }
+
+  removeTriggerIcon();
 
   activeInput = input;
-  
-  // إنشاء الأيقونة
+
   const icon = document.createElement('div');
   icon.className = '__af_trigger_icon__';
-  
+  icon.tabIndex = -1;
+  icon.setAttribute('aria-hidden', 'true');
+  // Don't steal the rest of the click that just focused the input
+  icon.style.pointerEvents = 'none';
+
   document.body.appendChild(icon);
   activeTriggerIcon = icon;
-  
+
   positionTriggerIcon(input);
 
-  // عند الضغط على الأيقونة تفتح القائمة فوراً
+  // Enable clicks after the focusing gesture finishes so the icon
+  // cannot steal mouseup from the first click on the input.
+  setTimeout(() => {
+    if (activeTriggerIcon === icon) icon.style.pointerEvents = '';
+  }, 0);
+
   icon.addEventListener('mousedown', (e) => {
     e.preventDefault();
     e.stopPropagation();
     isInsideTriggerClick = true;
     showDropdown(input);
-    removeTriggerIcon(); // نخفي الأيقونة بما أن القائمة فتحت
+    removeTriggerIcon();
     setTimeout(() => { isInsideTriggerClick = false; }, 100);
   });
 }
@@ -700,21 +511,8 @@ function removeTriggerIcon() {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === 'autoFillForm') {
-    const data = request.data;
-    const filled = [];
-    const unmatched = [];
-
-    data.forEach(info => {
-      const element = findBestMatchingInputBtn(info);
-      if (element) {
-        fillInputElement(element, info.title);
-        filled.push(info.field);
-      } else {
-        unmatched.push(info.field);
-      }
-    });
-
-    sendResponse({ status: 'success', filled, unmatched });
+    const results = autoFillAll(request.data);
+    sendResponse({ status: 'success', results });
   }
 
   if (request.action === 'enableDropdown') {
@@ -725,6 +523,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'disableDropdown') {
     dropdownEnabled = false;
     removeDropdown();
+    removeTriggerIcon();
     sendResponse({ status: 'ok' });
   }
 
@@ -741,45 +540,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-// ============================================
-// AUTO FILL HELPERS
-// ============================================
-
 function isLatinBased(text) {
   return /^[a-z\s'"\/\-_.@+:]+$/i.test(text);
-}
-
-function getSearchTerms(info) {
-  return [info.field, ...(info.tags || [])]
-    .map(t => (typeof t === 'object' ? t.tagName : t).toLowerCase())
-    .filter(t => isLatinBased(t));
-}
-
-function findBestMatchingInput(info) {
-  const searchTerms = getSearchTerms(info);
-
-  let element = findByDirectAttributes(searchTerms);
-  if (element && verifyInputContextByTerms(element, searchTerms)) return element;
-
-  element = findByContextVerification(searchTerms);
-  if (element) return element;
-
-  return null;
-}
-
-function findByDirectAttributes(searchTerms) {
-  const selector = searchTerms.map(term =>
-    `input[name*="${term}" i], input[id*="${term}" i], input[placeholder*="${term}" i], textarea[name*="${term}" i]`
-  ).join(', ');
-  try { return document.querySelector(selector); } catch (e) { return null; }
-}
-
-function findByContextVerification(searchTerms) {
-  const allInputs = document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]), textarea');
-  for (const input of allInputs) {
-    if (verifyInputContextByTerms(input, searchTerms)) return input;
-  }
-  return null;
 }
 
 function verifyInputContextByTerms(input, searchTerms) {
@@ -927,14 +689,13 @@ function findBestMatchForLabel(labelText) {
 }
 
 function findInputNearElement(el) {
-  const SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]):not([type="button"]), textarea';
-  if (el.matches?.(SELECTOR)) return el;
-  const child = el.querySelector?.(SELECTOR);
+  if (el.matches?.(FILLABLE_SELECTOR)) return el;
+  const child = el.querySelector?.(FILLABLE_SELECTOR);
   if (child) return child;
   let current = el.parentElement;
   for (let i = 0; i < 5; i++) {
     if (!current || current === document.body) break;
-    const found = current.querySelector(SELECTOR);
+    const found = current.querySelector(FILLABLE_SELECTOR);
     if (found) return found;
     current = current.parentElement;
   }
@@ -1038,6 +799,8 @@ function onMappingKeyDown(e) {
 
 function startMappingMode() {
   mappingMode = true;
+  removeDropdown();
+  removeTriggerIcon();
   document.body.classList.add('__af_mapping_cursor__');
   document.addEventListener('mousemove', onMappingMouseMove);
   document.addEventListener('keydown', onMappingKeyDown);
@@ -1076,99 +839,63 @@ function fillInputElement(element, value) {
   element.dispatchEvent(new Event('blur', { bubbles: true }));
 }
 
-// ============================================
-// LISTENERS
-// ============================================
-
-// function attachListeners() {
-//   const SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]), textarea';
-
-//   document.addEventListener('focusin', (e) => {
-//     if (!dropdownEnabled) return;
-//     if (mappingMode) return; // don't show dropdown during mapping
-//     if (!chrome?.runtime?.id) return;
-//     const input = e.target.closest(SELECTOR);
-//     if (!input) return;
-
-//     if (profileData.length > 0) {
-//       showDropdown(input);
-//     } else {
-//       chrome.storage.local.get('info', (result) => {
-//         profileData = result.info || [];
-//         if (profileData.length > 0) showDropdown(input);
-//       });
-//     }
-//   });
-
-//   document.addEventListener('mousedown', (e) => {
-//     if (dropdown && !dropdown.contains(e.target) && e.target !== activeInput) {
-//       removeDropdown();
-//     }
-//   });
-
-//   window.addEventListener('resize', () => { if (activeInput) positionDropdown(activeInput); });
-//   window.addEventListener('scroll', () => { if (activeInput) positionDropdown(activeInput); }, { passive: true });
-// }
-
 function attachListeners() {
-  const SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="radio"]):not([type="checkbox"]), textarea';
+  if (listenersAttached) return;
+  listenersAttached = true;
 
-  // 1. عند الدخول على الـ Input نظهر الأيقونة فقط ولا نظهر الـ Dropdown
-  // document.addEventListener('focusin', (e) => {
-  //   if (!dropdownEnabled) return;
-  //   if (mappingMode) return;
-  //   if (!chrome?.runtime?.id) return;
-  //   const input = e.target.closest(SELECTOR);
-  //   if (!input) return;
-
-  //   // بنجيب البيانات وبنظهر الأيقونة الصغيرة العائمة بس
-  //   if (profileData.length > 0) {
-  //     showTriggerIcon(input);
-  //   } else {
-  //     chrome.storage.local.get('info', (result) => {
-  //       profileData = result.info || [];
-  //       if (profileData.length > 0) showTriggerIcon(input);
-  //     });
-  //   }
-  // });
   document.addEventListener('focusin', (e) => {
-  if (!dropdownEnabled) return;
-  if (mappingMode) return;
-  if (!chrome?.runtime?.id) return;
-  const input = e.target.closest(SELECTOR);
-  if (!input) return;
+    if (!dropdownEnabled) return;
+    if (mappingMode) return;
+    if (!chrome?.runtime?.id) return;
+    const input = e.target.closest?.(FILLABLE_SELECTOR);
+    if (!input) return;
 
-  if (profileData.length > 0) {
-    showTriggerIcon(input);
-  } else {
-    // Data not loaded yet — fetch it now, then show icon
-    chrome.storage.local.get('info', (result) => {
-      profileData = result.info || [];
-      if (profileData.length > 0) showTriggerIcon(input);
-    });
-  }
-});
-
-  // 2. عند الخروج من الـ Input نغلق الأيقونة
-  document.addEventListener('focusout', (e) => {
-    setTimeout(() => {
-      if (!isInsideTriggerClick && dropdown === null) {
-        removeTriggerIcon();
-      }
-    }, 150); // تأخير بسيط للسماح بلقط الكليكات
+    if (profileData.length > 0) {
+      showTriggerIcon(input);
+    } else {
+      chrome.storage.local.get('info', (result) => {
+        profileData = result.info || [];
+        if (profileData.length > 0 && document.activeElement === input) {
+          showTriggerIcon(input);
+        }
+      });
+    }
   });
 
-  // 3. إغلاق القائمة أو الأيقونة لو ضغطنا في أي مكان خارجي
+  // Only hide the icon when focus has actually left fillable inputs.
+  // A document-level focusout also fires when moving FROM body/another
+  // element INTO the input (first click), which previously removed the icon.
+  document.addEventListener('focusout', (e) => {
+    const next = e.relatedTarget;
+    if (activeTriggerIcon && next && activeTriggerIcon.contains(next)) return;
+    if (dropdown && next && dropdown.contains(next)) return;
+
+    setTimeout(() => {
+      if (isInsideTriggerClick) return;
+      if (dropdown) return;
+
+      const focused = document.activeElement;
+      if (isFillableInput(focused)) {
+        showTriggerIcon(focused);
+        return;
+      }
+      removeTriggerIcon();
+    }, 150);
+  });
+
   document.addEventListener('mousedown', (e) => {
-    if (dropdown && !dropdown.contains(e.target) && e.target !== activeInput) {
+    const clickedIcon = activeTriggerIcon && activeTriggerIcon.contains(e.target);
+    const clickedDropdown = dropdown && dropdown.contains(e.target);
+    const clickedInput = e.target.closest?.(FILLABLE_SELECTOR);
+
+    if (dropdown && !clickedDropdown && clickedInput !== activeInput) {
       removeDropdown();
     }
-    if (activeTriggerIcon && e.target !== activeTriggerIcon && e.target !== activeInput) {
+    if (activeTriggerIcon && !clickedIcon && clickedInput !== activeInput) {
       removeTriggerIcon();
     }
   });
 
-  // 4. الحفاظ على توازن مكان الأيقونة والـ Dropdown أثناء السكرول أو الريسايز
   window.addEventListener('resize', () => { 
     if (activeInput) {
       if (dropdown) positionDropdown(activeInput);
