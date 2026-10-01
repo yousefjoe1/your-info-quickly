@@ -6,6 +6,7 @@ import { getData, saveData } from '../../lib/actionFunctions';
 import Toast from '../../components/Toasts/Toast';
 import { useToast } from './hooks/useToast';
 import { useView } from '../../contexts/ViewContext';
+import { FaPaperPlane } from 'react-icons/fa6';
 
 const Popup: React.FC = () => {
     const { toast, showToast, hideToast } = useToast();
@@ -119,9 +120,17 @@ const Popup: React.FC = () => {
             <button
                 type="button"
                 onClick={() => handleMagicFill(myQuickInfo)}
-                className="bg-purple-600 my-5 w-full justify-center hover:bg-purple-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-lg"
+                className="my-5 flex w-full items-center gap-3 rounded-full bg-[#39b54a] py-1.5 pl-1.5 pr-6 text-left shadow-[0_4px_14px_rgba(57,181,74,0.45)] transition-all hover:bg-[#32a340] hover:shadow-[0_6px_18px_rgba(57,181,74,0.5)] active:scale-[0.99]"
             >
-                ✨ Magic Auto-fill
+                <span
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white"
+                    aria-hidden
+                >
+                    <FaPaperPlane className="text-[#39b54a]" size={18} />
+                </span>
+                <span className="text-sm font-bold uppercase tracking-wide text-white">
+                    Magic Auto-fill
+                </span>
             </button>
 
             <div className={`${viewMode === 'popup' ? 'max-h-[300px]' : 'grid grid-cols-2 gap-2'} overflow-y-auto p-2 pb-4`}>
