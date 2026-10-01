@@ -3,44 +3,63 @@
 // ============================================================
 
 // ─── Config ──────────────────────────────────────────────────
-const SCORE_THRESHOLD = 2;   // minimum score to accept a match
+const SCORE_THRESHOLD = 6;   // minimum score to accept a match
 const MAX_CONTEXT     = 15;  // max context entries per input
 const MAX_LEVELS      = 10;  // max parent levels to walk up
-const DEBUG           = true; // set false to silence logs
+const HINT_BONUS      = 20;  // autocomplete / input.type agreement
 
 // ─── Entry point ─────────────────────────────────────────────
 function autoFillAll(data) {
-  const allInputs = getPageInputs();
-  const results   = [];
+  if (!Array.isArray(data) || data.length === 0) return [];
 
-  // Build context once per input (expensive DOM walk done only once)
+  const allInputs = getPageInputs();
   const inputContexts = allInputs.map(input => ({
     input,
     context: buildContextArray(input),
   }));
 
-  if (DEBUG) {
-    console.group("🔍 Autofill context dump");
-    inputContexts.forEach(({ input, context }) => {
-      console.log(`INPUT [${input.name || input.id || input.placeholder || input.tagName}]`, context);
-    });
-    console.groupEnd();
-  }
+  const candidates = [];
 
-  for (const fieldInfo of data) {
-    const match = findBestMatch(inputContexts, fieldInfo);
+  data.forEach((fieldInfo, fieldIndex) => {
+    const searchTerms = buildSearchTerms(fieldInfo);
+    const profileHint = getProfileHint(fieldInfo);
 
-    if (match && match.score >= SCORE_THRESHOLD) {
-      fillInput(match.input, fieldInfo.title);
-      console.log(`✅ "${fieldInfo.field}" → score ${match.score} | filled "${fieldInfo.title}"`);
-      results.push({ field: fieldInfo.field, filled: true, score: match.score });
-    } else {
-      console.warn(`❌ "${fieldInfo.field}" — no confident match (best score: ${match?.score ?? 0})`);
-      results.push({ field: fieldInfo.field, filled: false, score: match?.score ?? 0 });
+    for (const { input, context } of inputContexts) {
+      const { total, strong } = scoreContext(context, searchTerms);
+      const hintBonus = (profileHint && getInputHint(input) === profileHint) ? HINT_BONUS : 0;
+      const score = total + hintBonus;
+      if (score < SCORE_THRESHOLD) continue;
+      if (!strong && hintBonus === 0) continue;
+      candidates.push({ fieldIndex, fieldInfo, input, score });
     }
+  });
+
+  candidates.sort((a, b) => b.score - a.score);
+
+  const claimedFields = new Set();
+  const claimedInputs = new Set();
+  const assignments = new Map();
+
+  for (const candidate of candidates) {
+    if (claimedFields.has(candidate.fieldIndex)) continue;
+    if (claimedInputs.has(candidate.input)) continue;
+    claimedFields.add(candidate.fieldIndex);
+    claimedInputs.add(candidate.input);
+    assignments.set(candidate.fieldIndex, candidate);
   }
 
-  return results;
+  for (const candidate of assignments.values()) {
+    fillInput(candidate.input, candidate.fieldInfo.title, { blur: false });
+  }
+
+  return data.map((fieldInfo, fieldIndex) => {
+    const match = assignments.get(fieldIndex);
+    return {
+      field: fieldInfo.field,
+      filled: Boolean(match),
+      score: match?.score ?? 0,
+    };
+  });
 }
 
 // ─── Collect all fillable inputs ─────────────────────────────
@@ -56,8 +75,40 @@ function getPageInputs() {
 
   return inputs.filter(el => {
     if (el.tagName === 'INPUT' && EXCLUDE_TYPES.has(el.type?.toLowerCase())) return false;
+    if (el.disabled || el.readOnly) return false;
+    if (el.closest('[hidden], [aria-hidden="true"]')) return false;
     return true;
   });
+}
+
+function getProfileHint(fieldInfo) {
+  const type = String(fieldInfo.type || '').toLowerCase();
+  const parts = [
+    fieldInfo.field,
+    type,
+    ...(fieldInfo.tags || []).map(t => (typeof t === 'object' ? t.tagName : t)),
+  ];
+  const hay = normalizeText(parts.filter(Boolean).join(' '));
+
+  if (type === 'email' || /(e[\s-]?mail|username|ايميل|بريد)/.test(hay)) return 'email';
+  if (type === 'tel' || /(phone|mobile|tel|whats|هاتف|جوال|واتس)/.test(hay)) return 'tel';
+  if (type === 'url' || /(linkedin|github|portfolio|website|url|لينكد)/.test(hay)) return 'url';
+  if (/(name|اسم)/.test(hay)) return 'name';
+  return type || null;
+}
+
+function getInputHint(input) {
+  const type = String(input.type || '').toLowerCase();
+  const ac = String(input.getAttribute('autocomplete') || '')
+    .toLowerCase()
+    .split(/\s+/)
+    .pop();
+
+  if (type === 'email' || ac === 'email' || ac === 'username') return 'email';
+  if (type === 'tel' || (ac && ac.startsWith('tel'))) return 'tel';
+  if (type === 'url' || ac === 'url') return 'url';
+  if (['name', 'given-name', 'additional-name', 'family-name', 'nickname'].includes(ac)) return 'name';
+  return null;
 }
 
 
@@ -216,95 +267,64 @@ function buildSearchTerms(fieldInfo) {
   return terms;
 }
 
-// ─── Find best matching input for a field ────────────────────
-function findBestMatch(inputContexts, fieldInfo) {
-  const searchTerms = buildSearchTerms(fieldInfo);
-  let best = null;
-
-  for (const { input, context } of inputContexts) {
-    const score = scoreContext(context, searchTerms);
-    if (!best || score > best.score) {
-      best = { input, score };
-    }
-  }
-
-  if (DEBUG && best) {
-    console.log(`🎯 "${fieldInfo.field}" best score: ${best.score}`);
-  }
-
-  return best;
-}
-
-
 function scoreContext(context, searchTerms) {
   let total = 0;
+  let strong = false;
 
   for (const { text, weight } of context) {
     const textTokens = new Set(tokenize(text));
+    const isStrongSource = weight >= 3;
 
     for (const { phrase, tokens } of searchTerms) {
-      // A. Exact full phrase match
       if (text === phrase) {
         total += 4 * weight;
+        if (isStrongSource) strong = true;
         continue;
       }
 
-      // B. Context text contains the full phrase
-      //    "your expected salary in egp" ⊇ "expected salary"
-      if (text.includes(phrase)) {
+      if (phrase.length > 2 && text.includes(phrase)) {
         total += 3 * weight;
+        if (isStrongSource) strong = true;
         continue;
       }
 
-      // C. Phrase contains the context text
-      //    label text "salary" ⊂ search phrase "expected salary"
-      if (phrase.includes(text) && text.length > 2) {
+      if (phrase.includes(text) && text.length >= 4) {
         total += 2 * weight;
         continue;
       }
 
-      // D. Token-level matching
-      //    Count how many search tokens appear as words in context text
       const matchedTokens = tokens.filter(t => textTokens.has(t));
       if (matchedTokens.length > 0) {
-        const allMatch  = matchedTokens.length === tokens.length;
-        const tokenScore = allMatch
-          ? 2 * weight * matchedTokens.length   // all tokens matched — high confidence
-          : 1 * weight * matchedTokens.length;  // partial token match
-        total += tokenScore;
+        const allMatch = matchedTokens.length === tokens.length;
+        total += allMatch
+          ? 2 * weight * matchedTokens.length
+          : 1 * weight * matchedTokens.length;
+        if (allMatch && isStrongSource && matchedTokens.length >= 2) strong = true;
       }
     }
   }
 
-  return total;
+  return { total, strong };
 }
 
-function fillInput(element, value) {
-  element.focus();
+function fillInput(element, value, options = {}) {
+  const blur = options.blur === true;
 
-  if (element.hasAttribute('contenteditable')) {
-    // ContentEditable (Draft.js, Quill, Slate, etc.)
-    element.innerText = value;
-    element.dispatchEvent(new InputEvent('input', { bubbles: true, data: value }));
-
-  } else if (element.tagName === 'TEXTAREA') {
-    const setter = Object.getOwnPropertyDescriptor(
-      HTMLTextAreaElement.prototype, 'value'
-    ).set;
-    setter.call(element, value);
-
-  } else {
-    // Standard <input>
-    const setter = Object.getOwnPropertyDescriptor(
-      HTMLInputElement.prototype, 'value'
-    ).set;
-    setter.call(element, value);
+  try {
+    if (element.hasAttribute('contenteditable')) {
+      element.innerText = value;
+    } else if (element.tagName === 'TEXTAREA') {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(element, value);
+    } else {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(element, value);
+    }
+  } catch (e) {
+    element.value = value;
   }
 
-  // Fire all events so React/Vue/Angular pick up the change
-  element.dispatchEvent(new Event('input',  { bubbles: true }));
+  element.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: value }));
   element.dispatchEvent(new Event('change', { bubbles: true }));
-  element.dispatchEvent(new Event('blur',   { bubbles: true }));
+  if (blur) element.dispatchEvent(new Event('blur', { bubbles: true }));
 }
 
 let profileData = [];
@@ -407,6 +427,8 @@ const STYLES = `
 
 // ─── INIT ────────────────────────────────────
 function init() {
+  if (globalThis.__AF_QUICK_INFO_INIT__) return;
+  globalThis.__AF_QUICK_INFO_INIT__ = true;
   injectStyles();
   try {
     if (!chrome?.runtime?.id) {
@@ -508,6 +530,8 @@ function removeTriggerIcon() {
 }
 
 // ─── MESSAGE LISTENER ────────────────────────
+if (!globalThis.__AF_QUICK_INFO_BOUND__) {
+globalThis.__AF_QUICK_INFO_BOUND__ = true;
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === 'autoFillForm') {
@@ -539,6 +563,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   return true;
 });
+}
 
 function isLatinBased(text) {
   return /^[a-z\s'"\/\-_.@+:]+$/i.test(text);
